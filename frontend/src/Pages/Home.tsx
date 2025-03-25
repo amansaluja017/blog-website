@@ -1,6 +1,7 @@
 import { Hero } from "../components"
 
 
+
 function Home() {
   return (
     <div>

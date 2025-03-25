@@ -5,29 +5,31 @@ import { ApiResponse } from "../utils/ApiResponse";
 import { asyncHandler } from "../utils/asyncHandler";
 
 
-export const userRegister = asyncHandler(async(req: Request, res: Response) => {
-    const { fullName, email, nickname, source } = req.body;
-
-    if(!fullName || !email || !nickname || !source) {
+export const userRegister = asyncHandler(async (req: Request, res: Response) => {
+    const { name, email, nickname, sub, picture, accessToken }: { name: string, email: string, nickname: string, sub: String, picture: string, accessToken: string } = req.body;
+    console.log(accessToken);
+    if (!name || !email || !nickname || !sub) {
         throw new ApiError(400, "All fields are required");
     }
 
     // Check if email already exists
     const user = await User.findOne({ email });
-    if(user) {
-        throw new ApiError(400, "Email already exists");
+    if (user) {
+        return res.status(200).json(new ApiResponse(200, user, "Login success"));
     }
 
     const createUser = await User.create({
-        fullName,
+        name,
         email,
         nickname,
-        source
+        sub,
+        picture,
+        accessToken
     });
 
-    if(!createUser) {
+    if (!createUser) {
         throw new ApiError(500, "Failed to register user");
     }
 
-    res.status(201).json(new ApiResponse(201, createUser, "user created successfully"));
+    return res.status(201).cookie("accessToken", accessToken).json(new ApiResponse(201, createUser, "user created successfully"));
 });

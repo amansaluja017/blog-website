@@ -4,25 +4,27 @@ const Schema = mongoose.Schema;
 
 const userSchema = new Schema(
     {
-        fullName: {
+        name: {
             type: String,
             required: true
         },
-        username: {
+        nickname: {
             type: String,
             required: true,
-            unique: true
         },
         email: {
             type: String,
             required: true,
-            unique: true
         },
-        avatar: {
+        picture: {
             type: String,
         },
-        source: {
+        sub: {
             type: String,
+        },
+        accessToken: {
+            type: String,
+            required: true,
         }
     }, { timestamps: true }
 );
