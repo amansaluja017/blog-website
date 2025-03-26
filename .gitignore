@@ -7,3 +7,4 @@ backend/dist/tsconfig.tsbuildinfo
 backend/dist/src/app.js
 backend/dist/src/index.js
 frontend/.env
+frontend/bun.lock

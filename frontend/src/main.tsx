@@ -11,12 +11,16 @@ import "./index.css";
 import App from "./App";
 import Home from "./Pages/Home";
 import Blogs from "./Pages/Blogs";
+import Editor from "./Pages/Editor";
+import PostBlog from "./Pages/PostBlog";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<App />}>
       <Route index element={<Home />} />
       <Route path="/blogs" element={<Blogs />} />
+      <Route path="/editor" element={<Editor />} />
+      <Route path="/blog-post" element={<PostBlog />} />
     </Route>
   )
 );
