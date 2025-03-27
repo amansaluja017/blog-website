@@ -11,8 +11,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import axios from "axios";
 import { useForm } from "react-hook-form";
-import { Auth0ContextInterface, useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom";
+import { TypedUseSelectorHook, useSelector } from "react-redux";
+import { RootState } from "@/store/confStore";
 
 interface PostCardProps {
   postContent: string;
@@ -20,8 +21,10 @@ interface PostCardProps {
 
 function PostCard(props: PostCardProps) {
   const navigate = useNavigate();
-  const { user }: Auth0ContextInterface<any> = useAuth0();
   const { register, handleSubmit } = useForm();
+  const useTypedSelector: TypedUseSelectorHook<RootState> = useSelector;
+  const user = useTypedSelector(state => state.user.userData);
+
 
   const submit = async (data: Record<string, any>) => {
     const formData = new FormData();
@@ -82,7 +85,7 @@ function PostCard(props: PostCardProps) {
               <Label htmlFor="name">Writer</Label>
               <Input
                 id="Writer"
-                defaultValue={user?.name}
+                defaultValue={`${user?.firstName}` + " " + `${user?.lastName}`}
                 readOnly
                 {...register("author", { required: true })}
               />
@@ -107,7 +110,7 @@ function PostCard(props: PostCardProps) {
         <Button
           onClick={handleSubmit(submit)}
           className="bg-black cursor-pointer">
-          Create
+          Post
         </Button>
       </CardFooter>
     </Card>

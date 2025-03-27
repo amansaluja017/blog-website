@@ -1,4 +1,3 @@
-import { Auth0ContextInterface, useAuth0 } from "@auth0/auth0-react";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -20,52 +19,8 @@ function Blogs() {
   const [value, setValue] = useState(blogs);
   const searchRef = useRef(null);
   const navigate = useNavigate();
-  const [accessToken, setAccessToken] = useState<string>("");
-  const {
-    user,
-    getAccessTokenSilently,
-    loginWithRedirect,
-  }: Auth0ContextInterface<any> = useAuth0();
 
-  useEffect(() => {
-    if (user) {
-      const registerUser = async () => {
-        try {
-          await axios.post(
-            `${import.meta.env.VITE_BASE_URL}/api/v1/users/register`,
-            {
-              name: user.name,
-              email: user.email,
-              picture: user.picture,
-              sub: user.sub,
-              nickname: user.nickname,
-              accessToken,
-            },
-            {
-              withCredentials: true,
-            }
-          );
-        } catch (error) {
-          console.error("Error registering user:", error);
-        }
-      };
 
-      registerUser();
-    }
-  }, [user?.sub]);
-
-  useEffect(() => {
-    const restoreSession = async () => {
-      try {
-        const token = await getAccessTokenSilently();
-        setAccessToken(token);
-      } catch (error) {
-        loginWithRedirect();
-      }
-    };
-
-    restoreSession();
-  }, [getAccessTokenSilently, loginWithRedirect]);
 
   useEffect(() => {
     const fetchBlogs = async () => {
@@ -111,7 +66,7 @@ function Blogs() {
           Create Blog
         </button>
       </div>
-      <div className="px-10 text-white">
+      <div className="px-4 sm:px-6 md:px-10 text-white">
         <label className="input">
           <svg
             className="h-[1em] opacity-50"
@@ -132,17 +87,17 @@ function Blogs() {
           <kbd className="kbd kbd-sm">K</kbd>
         </label>
       </div>
-      <div className=" grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1 items-center p-10 py-15 gap-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8 p-4 sm:p-6 md:p-10">
         {blogs &&
           value.map((blog, i) => {
             return (
-              <div key={i}>
-                <div className="card bg-base-100 w-96 shadow-sm text-white object-fill">
-                  <figure>
+              <div key={i} className="w-full">
+                <div className="card bg-base-100 w-full shadow-sm text-white">
+                  <figure className="h-48 w-full">
                     <img
                       src={blog.coverImage || "/default-cover.jpg"}
                       alt={`${blog.title} cover image`}
-                      className="h-48 w-full object-cover"
+                      className="h-full w-full object-cover"
                     />
                   </figure>
                   <div className="card-body">

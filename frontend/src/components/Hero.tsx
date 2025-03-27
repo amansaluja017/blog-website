@@ -1,3 +1,5 @@
+import { GoogleLogin } from "@react-oauth/google";
+
 function Hero() {
   return (
     <div>
@@ -10,7 +12,14 @@ function Hero() {
               excepturi exercitationem quasi. In deleniti eaque aut repudiandae
               et a id nisi.
             </p>
-            <button className="btn btn-primary">Get Started</button>
+            {/* <GoogleLogin
+              onSuccess={(credentialResponse) => {
+                console.log("Login Success:", credentialResponse);
+              }}
+              onError={() => {
+                console.log("Login Failed");
+              }}
+            /> */}
           </div>
         </div>
       </div>

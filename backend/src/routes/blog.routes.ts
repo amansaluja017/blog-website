@@ -1,8 +1,10 @@
 import express from "express";
 import { blogPost, getAllBlogs } from "../controller/blog.controller";
 import { upload } from "../middlewares/multer.middleware";
+import { verifyJWT } from "../middlewares/auth.middleware";
 
 const router = express.Router();
+router.use(verifyJWT);
 
 router.route('/post').post(upload.fields([
     {
