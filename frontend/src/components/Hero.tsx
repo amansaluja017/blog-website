@@ -12,14 +12,6 @@ function Hero() {
               excepturi exercitationem quasi. In deleniti eaque aut repudiandae
               et a id nisi.
             </p>
-            {/* <GoogleLogin
-              onSuccess={(credentialResponse) => {
-                console.log("Login Success:", credentialResponse);
-              }}
-              onError={() => {
-                console.log("Login Failed");
-              }}
-            /> */}
           </div>
         </div>
       </div>

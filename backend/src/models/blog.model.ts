@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { mongo } from "mongoose";
 
 const Schema = mongoose.Schema;
 
@@ -17,7 +17,8 @@ const blogSchema = new Schema(
             required: true
         },
         author: {
-            type: String,
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
             required: true,
         },
         coverImage: {

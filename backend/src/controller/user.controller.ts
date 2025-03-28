@@ -112,14 +112,38 @@ export const googleUser = asyncHandler(async (req: Request, res: Response) => {
 export const getCurrentUser = asyncHandler(async (req: Request, res: Response) => {
     const user = req.user;
 
-    if(!user) {
+    if (!user) {
         return res.status(404).json(new ApiResponse(404, null, "User not found"));
     }
 
     return res.status(200).json(new ApiResponse(200, user, "User found successfully"));
 });
 
-export const logout = asyncHandler(async(req: Request, res: Response) => {
+export const login = asyncHandler(async (req: Request, res: Response) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        throw new ApiError(400, "All fields are required");
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    const isMatch = await user.comparePassword(password);
+
+    if (!isMatch) {
+        throw new ApiError(400, "Invalid credentials");
+    }
+
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id as unknown as mongoose.Schema.Types.ObjectId);
+
+    return res.status(200).cookie("accessToken", accessToken).cookie("refreshToken", refreshToken).json(new ApiResponse(200, user, "User login successfully"));
+});
+
+export const logout = asyncHandler(async (req: Request, res: Response) => {
     const user = await User.findOneAndUpdate({ _id: req.user?._id }, { refreshToken: "" }, { new: true });
 
     if (!user) {
@@ -127,4 +151,40 @@ export const logout = asyncHandler(async(req: Request, res: Response) => {
     }
 
     return res.clearCookie("accessToken").clearCookie("refreshToken").json(new ApiResponse(200, null, "User logged out successfully"));
+});
+
+export const updateDetails = asyncHandler(async(req: Request, res: Response) => {
+    const { firstName, lastName, email, avatar } = req.body;
+
+    const user = await User.findOneAndUpdate({ _id: req.user?._id }, { firstName, lastName, email, avatar }, { new: true });
+
+    if (!user) {
+        throw new ApiError(500, "Failed to update user details");
+    }
+
+    return res.status(200).json(new ApiResponse(200, user, "User details updated successfully"));
+});
+
+export const updatePassword = asyncHandler(async(req: Request, res: Response) => {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+        throw new ApiError(400, "All fields are required");
+    }
+
+    const user = await User.findOne({ _id: req.user?._id });
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    const isMatch = await user.comparePassword(currentPassword);
+
+    if (!isMatch) {
+        throw new ApiError(400, "Invalid credentials");
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    return res.status(200).json(new ApiResponse(200, null, "Password updated successfully"));
 });

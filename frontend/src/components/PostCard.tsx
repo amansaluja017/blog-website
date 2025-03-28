@@ -23,15 +23,14 @@ function PostCard(props: PostCardProps) {
   const navigate = useNavigate();
   const { register, handleSubmit } = useForm();
   const useTypedSelector: TypedUseSelectorHook<RootState> = useSelector;
-  const user = useTypedSelector(state => state.user.userData);
-
+  const user = useTypedSelector((state: RootState) => state.user.userData);
 
   const submit = async (data: Record<string, any>) => {
     const formData = new FormData();
     Object.keys(data).forEach((key: string) => {
       formData.append(key, key === "coverImage" ? data[key][0] : data[key]);
     });
-    console.log(...formData);
+
     const response = await axios.post(
       `${import.meta.env.VITE_BASE_URL}/api/v1/blogs/post`,
       formData,

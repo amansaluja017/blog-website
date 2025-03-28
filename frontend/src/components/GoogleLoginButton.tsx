@@ -32,13 +32,12 @@ const GoogleLoginButton = () => {
   return (
     <GoogleLogin
       onSuccess={(response) => {
-        console.log("Login Success:", response.credential);
         if(response) {
           setToken(response.credential!);
         }
       }}
       onError={() => {
-        console.log("Login Failed");
+        console.error("Login Failed");
       }}
     />
   );

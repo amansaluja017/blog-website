@@ -1,5 +1,5 @@
 import express from "express";
-import { blogPost, getAllBlogs } from "../controller/blog.controller";
+import { blogPost, deleteBlog, getAllBlogs, myBlogs, updateBlog } from "../controller/blog.controller";
 import { upload } from "../middlewares/multer.middleware";
 import { verifyJWT } from "../middlewares/auth.middleware";
 
@@ -14,5 +14,8 @@ router.route('/post').post(upload.fields([
 ]), blogPost);
 
 router.route('/getBlogs').get(getAllBlogs);
+router.route('/getMyBlogs').get(myBlogs);
+router.route('/update-blog/:blogId').patch(updateBlog);
+router.route('/delete-blog/:blogId').delete(deleteBlog);
 
 export default router;

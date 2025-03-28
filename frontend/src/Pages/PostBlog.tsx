@@ -5,7 +5,10 @@ import HTMLParser  from 'node-html-parser'
 function PostBlog() {
   const {state} = useLocation();
   const {content} = state || {};
-  const postContent: string = HTMLParser.parse(content).childNodes[0].childNodes[0].rawText;
+  
+  const postContent: string = content 
+    ? HTMLParser.parse(content).childNodes[0]?.childNodes[0].rawText 
+    : '';
   
   return (
     <div className='h-screen bg-base-200 flex justify-center items-center'>

@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { TypedUseSelectorHook, useSelector } from "react-redux";
+import { RootState } from "@/store/confStore";
 
 interface blogObject {
   id: string;
@@ -19,8 +21,8 @@ function Blogs() {
   const [value, setValue] = useState(blogs);
   const searchRef = useRef(null);
   const navigate = useNavigate();
-
-
+  const useTypedSelector: TypedUseSelectorHook<RootState> = useSelector;
+  const status: boolean = useTypedSelector(state => state.user.status);
 
   useEffect(() => {
     const fetchBlogs = async () => {
@@ -33,8 +35,10 @@ function Blogs() {
         setBlogs(response.data.data);
       }
     };
-    fetchBlogs();
-  }, []);
+    if (status)  {
+      fetchBlogs();
+    }
+  }, [status]);
 
   useEffect(() => {
     const filterBlogs = blogs.filter(blog => {
@@ -46,7 +50,6 @@ function Blogs() {
       )
     })
     setSearchBlogs(filterBlogs);
-    console.log(filterBlogs);
 
     if(searchTerm.length < 1) {
       setValue(blogs)

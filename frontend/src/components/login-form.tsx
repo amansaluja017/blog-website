@@ -11,12 +11,37 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 import GoogleLoginButton from "./GoogleLoginButton";
+import { useForm } from "react-hook-form";
+import axios from "axios";
+import { useDispatch } from "react-redux";
+import { login } from "@/store/userSlice";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const { register, handleSubmit } = useForm();
+
+  const submit = async (data: any) => {
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/api/v1/users/login`,
+        data,
+        { withCredentials: true }
+      );
+
+      if (response.status === 200) {
+        dispatch(login(response.data.data));
+        navigate("/blogs");
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <div className={cn("flex flex-col gap-6 ", className)} {...props}>
       <Card className="bg-[#191E24] text-white border-[#0c0f13] shadow-2xl">
@@ -27,7 +52,7 @@ export function LoginForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <form onClick={handleSubmit(submit)}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-3">
                 <Label htmlFor="email">Email</Label>
@@ -36,6 +61,7 @@ export function LoginForm({
                   type="email"
                   placeholder="m@example.com"
                   required
+                  {...register("email", { required: true })}
                 />
               </div>
               <div className="grid gap-3">
@@ -47,7 +73,12 @@ export function LoginForm({
                     Forgot your password?
                   </a>
                 </div>
-                <Input id="password" type="password" required />
+                <Input
+                  id="password"
+                  type="password"
+                  required
+                  {...register("password", { required: true })}
+                />
               </div>
               <div className="flex flex-col gap-3">
                 <Button type="submit" className="w-full cursor-pointer">

@@ -6,10 +6,10 @@ import { ApiResponse } from "../utils/ApiResponse";
 import { uploadImage } from "../utils/Cloudinary";
 
 
-export const blogPost = asyncHandler(async(req: Request, res: Response) => {
-    const {title, description, content, author}: {title: string, description: string, content: string, author: string} = req.body;
+export const blogPost = asyncHandler(async (req: Request, res: Response) => {
+    const { title, description, content }: { title: string, description: string, content: string } = req.body;
 
-    if(!title || !description || !content || !author) {
+    if (!title || !description || !content) {
         throw new ApiError(404, "Invalid title or description");
     }
 
@@ -23,13 +23,13 @@ export const blogPost = asyncHandler(async(req: Request, res: Response) => {
     }
     const coverImagePath = files.coverImage[0].path;
 
-    if(!coverImagePath) {
+    if (!coverImagePath) {
         throw new ApiError(400, "Cover image is required");
     }
 
     const coverImage = await uploadImage(coverImagePath);
 
-    if(!coverImage) {
+    if (!coverImage) {
         throw new ApiError(500, "Failed to upload cover image");
     }
 
@@ -37,32 +37,71 @@ export const blogPost = asyncHandler(async(req: Request, res: Response) => {
         title,
         description,
         content,
-        author,
+        author: req.user?._id,
         coverImage
     })
 
-    if(!blog) {
+    if (!blog) {
         throw new ApiError(500, "Failed to create blog");
     }
 
     return res.status(201).json(new ApiResponse(200, blog, "blog create successfully"));
 });
 
-export const getAllBlogs = asyncHandler(async(req: Request, res: Response) => {
+export const getAllBlogs = asyncHandler(async (req: Request, res: Response) => {
 
     const blogs = await Blog.find().sort({ createdAt: -1 });
 
-    if(blogs.length < 1) {
-        return res.status(404).json(new ApiResponse(404, "Blog not found"));
+    if (blogs.length < 1) {
+        return res.status(200).json(new ApiResponse(404, "Blog not found"));
     }
 
     return res.status(200).json(new ApiResponse(200, blogs, "Blogs fetched successfully"));
 });
 
-export const myBlogs = asyncHandler(async(req: Request, res: Response) => {
-    const {email} = req.params;
+export const myBlogs = asyncHandler(async (req: Request, res: Response) => {
 
-    if(!email) {
-        throw new ApiError(404, "Please enter a valid email address");
+    const blogs = await Blog.find({ author: req.user?._id }).sort({ createdAt: -1 });
+
+    if (blogs.length < 1) {
+        return res.status(200).json(new ApiResponse(404, "Blog not found"));
     }
+
+    return res.status(200).json(new ApiResponse(200, blogs, "Blogs fetched successfully"));
+});
+
+export const updateBlog = asyncHandler(async (req: Request, res: Response) => {
+    const { title, description }: { title: string, description: string } = req.body;
+    const { blogId } = req.params;
+
+    if(!blogId) {
+        throw new ApiError(400, "Blog id is required");
+    };
+
+    const blog = await Blog.findByIdAndUpdate(blogId, {
+        title,
+        description
+    }, { new: true });
+
+    if (!blog) {
+        throw new ApiError(404, "Blog not found");
+    }
+
+    return res.status(200).json(new ApiResponse(200, blog, "Blog updated successfully"));
+});
+
+export const deleteBlog = asyncHandler(async (req: Request, res: Response) => {
+    const { blogId } = req.params;
+
+    if(!blogId) {
+        throw new ApiError(400, "Blog id is required");
+    }
+
+    const blog = await Blog.findByIdAndDelete(blogId);
+
+    if (!blog) {
+        throw new ApiError(404, "Blog not found");
+    }
+
+    return res.status(200).json(new ApiResponse(200, blog, "Blog deleted successfully"));
 });

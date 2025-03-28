@@ -33,8 +33,7 @@ export function SignupForm({
           navigate('/blogs');
         }
       } catch (error) {
-        console.log(error);
-        alert("Error registering user");
+        console.error(error);
       }
     }
 

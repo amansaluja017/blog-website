@@ -9,51 +9,73 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { useSelector, TypedUseSelectorHook } from "react-redux";
-import { RootState } from "@/store/confStore";// Adjust the path to your store file
+import { useSelector, TypedUseSelectorHook, useDispatch } from "react-redux";
+import { RootState } from "@/store/confStore";
+import { useNavigate } from "react-router-dom";
+import { logout } from "@/store/userSlice";
+import { googleLogout } from "@react-oauth/google";
 
-interface User {
-  firstName: string;
-  lastName: string;
-  email: string;
-  avatar: string;
-}
 
 function Profile() {
-  const [user, setUser] = useState<User>();
   const useTypedSelector: TypedUseSelectorHook<RootState> = useSelector;
-  const status = useTypedSelector(state => state.user.status);
+  const status: boolean = useTypedSelector((state) => state.user.status);
+  const user = useTypedSelector((state) => state.user.userData);
+
+  const dispatch = useDispatch();
+
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUser = async () => {
-      const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/api/v1/users/getCurrentUser`,
-        { withCredentials: true }
-      );
-      console.log(response);
-      if (response.status === 200) {
-        setUser(response.data.data);
-        console.log(response.data.data);
+      try {
+        await axios.get(
+          `${import.meta.env.VITE_BASE_URL}/api/v1/users/getCurrentUser`,
+          { withCredentials: true }
+        );
+      } catch (error) {
+        console.error("Error fetching user data:", error);
       }
     };
-    if(status) {
+    if (status) {
       fetchUser();
     }
   }, [status]);
+
+  const handleLogout = async () => {
+    const response = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/api/v1/users/logout`,
+      {},
+      { withCredentials: true }
+    );
+    if (response.status === 200) {
+      dispatch(logout());
+      navigate("/");
+      googleLogout();
+    }
+  };
+
 
   return (
     <div>
       <Sheet>
         <SheetTrigger>
           <Avatar className="cursor-pointer">
-            <AvatarImage src={user?.avatar} alt={`${user?.firstName} ${user?.lastName}`} />
-            <AvatarFallback>{`${user?.firstName?.[0] || ""}${user?.lastName?.[0] || ""}`}</AvatarFallback>
+            <AvatarImage
+              src={user?.avatar}
+              alt={`${user?.firstName} ${user?.lastName}`}
+            />
+            <AvatarFallback>{`${user?.firstName?.[0] || ""}${
+              user?.lastName?.[0] || ""
+            }`}</AvatarFallback>
           </Avatar>
         </SheetTrigger>
         <SheetContent className="bg-[#1D232A] p-6 rounded-lg">
           <SheetHeader>
             <SheetTitle>
-              <span className="font-sans text-white text-xl font-bold">Profile</span>
+              <span className="font-sans text-white text-xl font-bold">
+                Profile
+              </span>
             </SheetTitle>
             <div className="flex justify-center items-center flex-col text-center mt-6">
               <div className="avatar">
@@ -67,9 +89,43 @@ function Profile() {
               </div>
             </div>
             <SheetDescription>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Error pariatur ad tenetur ab explicabo quo obcaecati delectus maxime debitis! Facere dicta repudiandae et aspernatur explicabo quasi quis est ex neque?
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Error
+              pariatur ad tenetur ab explicabo quo obcaecati delectus maxime
+              debitis! Facere dicta repudiandae et aspernatur explicabo quasi
+              quis est ex neque?
             </SheetDescription>
           </SheetHeader>
+          <hr />
+          <div
+            onClick={() => {
+              navigate("/my-blogs");
+            }}
+            className="w-full cursor-pointer p-4 hover:bg-primary rounded-lg">
+            <div className="text-white font-semibold">My blogs</div>
+          </div>
+          <hr />
+          <div
+            onClick={() => {
+              navigate("/update-details");
+            }}
+            className="w-full cursor-pointer p-4 hover:bg-primary rounded-lg">
+            <div className="text-white font-semibold">Update details</div>
+          </div>
+          <hr />
+          <div
+            onClick={() => {
+              navigate("/update-password");
+            }}
+            className="w-full cursor-pointer p-4 hover:bg-primary rounded-lg">
+            <div className="text-white font-semibold">Change password</div>
+          </div>
+          <hr />
+
+          <button
+            onClick={() => handleLogout()}
+            className="btn btn-soft btn-error text-sm sm:text-base mt-5">
+            Logout
+          </button>
         </SheetContent>
       </Sheet>
     </div>

@@ -25,9 +25,13 @@ const userSlice = createSlice({
             localStorage.removeItem("userData");
             localStorage.setItem("status", JSON.stringify(false));
         },
+        Update: (state, action) => {
+            state.userData = action.payload;
+            localStorage.setItem("userData", JSON.stringify(action.payload));
+        }
     },
 });
 
-export const {signup, login, logout} = userSlice.actions;
+export const {signup, login, logout, Update} = userSlice.actions;
 
 export default userSlice.reducer;

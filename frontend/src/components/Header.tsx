@@ -1,10 +1,7 @@
 import Profile from "./Profile";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import { googleLogout } from "@react-oauth/google";
-import { TypedUseSelectorHook, useSelector, useDispatch } from "react-redux";
+import { TypedUseSelectorHook, useSelector } from "react-redux";
 import { RootState } from "@/store/confStore";
-import { logout } from "@/store/userSlice";
 
 export interface userInterface {
   firstName: string;
@@ -15,29 +12,14 @@ export interface userInterface {
 
 function Header() {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-
   const useTypedSelector: TypedUseSelectorHook<RootState> = useSelector;
   const status = useTypedSelector(state => state.user.status);
 
-  const handleLogout = async () => {
-    const response = await axios.post(
-      `${import.meta.env.VITE_BASE_URL}/api/v1/users/logout`,
-      {},
-      { withCredentials: true }
-    );
-    if (response.status === 200) {
-      console.log(response);
-      dispatch(logout());
-      navigate("/");
-      googleLogout();
-    }
-  };
-
+ 
   return (
     <div>
       <div className="navbar bg-base-100 shadow-sm z-50 relative px-4 sm:px-6 md:px-8">
-        <div className="flex-1">
+        <div className="flex items-start">
           <a className="flex items-center">
             <img
               src="./public/logo.webp"
@@ -49,16 +31,25 @@ function Header() {
             </strong>
           </a>
         </div>
+        <nav className="flex items-center gap-8 mr-10 w-full justify-center text-white font-medium text-lg">
+          {[
+            { label: "Home", path: "/blogs" },
+            { label: "About", path: "/about" },
+            { label: "Contact Us", path: "/contact-us" },
+          ].map((item) => (
+            <div
+              key={item.path}
+              onClick={() => navigate(item.path)}
+              className="cursor-pointer hover:text-gray-300 transition-colors duration-200"
+            >
+              <h3>{item.label}</h3>
+            </div>
+          ))}
+        </nav>
         <div className="flex-none gap-2">
           <div className="flex items-center gap-2 sm:gap-5">
             {status && <Profile />}
-            {status && (
-              <button
-                onClick={() => handleLogout()}
-                className="btn btn-soft btn-error text-sm sm:text-base">
-                Logout
-              </button>
-            )}
+           
             {!status && (
               <button
                 onClick={() => {
