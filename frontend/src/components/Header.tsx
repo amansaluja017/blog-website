@@ -2,6 +2,7 @@ import Profile from "./Profile";
 import { useNavigate } from "react-router-dom";
 import { TypedUseSelectorHook, useSelector } from "react-redux";
 import { RootState } from "@/store/confStore";
+import { useState } from "react";
 
 export interface userInterface {
   firstName: string;
@@ -11,57 +12,105 @@ export interface userInterface {
 }
 
 function Header() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
   const useTypedSelector: TypedUseSelectorHook<RootState> = useSelector;
-  const status = useTypedSelector(state => state.user.status);
+  const status = useTypedSelector((state) => state.user.status);
 
- 
   return (
-    <div>
-      <div className="navbar bg-base-100 shadow-sm z-50 relative px-4 sm:px-6 md:px-8">
-        <div className="flex items-start">
-          <a className="flex items-center">
+    <div className="sticky top-0 z-50 text-white">
+      <div className="navbar bg-base-100 shadow-md px-4 sm:px-6 md:px-8">
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center">
             <img
               src="./public/logo.webp"
               alt="logo"
               className="w-8 h-8 sm:w-10 sm:h-10 rounded-full"
             />
-            <strong className="btn btn-ghost text-lg sm:text-xl text-white ml-2 sm:ml-5">
+            <strong className="btn btn-ghost text-base sm:text-lg md:text-xl text-white ml-2">
               YourBlogs
             </strong>
-          </a>
-        </div>
-        <nav className="flex items-center gap-8 mr-10 w-full justify-center text-white font-medium text-lg">
-          {[
-            { label: "Home", path: "/blogs" },
-            { label: "About", path: "/about" },
-            { label: "Contact Us", path: "/contact-us" },
-          ].map((item) => (
-            <div
-              key={item.path}
-              onClick={() => navigate(item.path)}
-              className="cursor-pointer hover:text-gray-300 transition-colors duration-200"
-            >
-              <h3>{item.label}</h3>
-            </div>
-          ))}
-        </nav>
-        <div className="flex-none gap-2">
-          <div className="flex items-center gap-2 sm:gap-5">
+          </div>
+
+          {status && (
+            <nav className="hidden md:flex items-center gap-6 lg:gap-8">
+              {[
+                { label: "Home", path: "/blogs" },
+                { label: "About", path: "/about" },
+                { label: "Contact Us", path: "/contact-us" },
+              ].map((item) => (
+                <div
+                  key={item.path}
+                  onClick={() => navigate(item.path)}
+                  className="cursor-pointer text-white hover:text-primary transition-colors">
+                  <h3 className="text-sm lg:text-base">{item.label}</h3>
+                </div>
+              ))}
+            </nav>
+          )}
+
+          <div className="flex items-center gap-2 sm:gap-4">
             {status && <Profile />}
-           
             {!status && (
               <button
-                onClick={() => {
-                  navigate("/signup");
-                }}
-                className="btn btn-soft btn-primary text-sm sm:text-base">
+                onClick={() => navigate("/signup")}
+                className="btn btn-primary btn-sm sm:btn-md">
                 Signup
               </button>
             )}
           </div>
+
+          {status && (
+            <button
+              className="md:hidden ml-4"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}>
+              <svg
+                className="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24">
+                {isMenuOpen ? (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                ) : (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                )}
+              </svg>
+            </button>
+          )}
         </div>
       </div>
+
+      {isMenuOpen && (
+        <div className="md:hidden bg-base-100 shadow-lg">
+          <nav className="flex flex-col py-4">
+            {[
+              { label: "Home", path: "/blogs" },
+              { label: "About", path: "/about" },
+              { label: "Contact Us", path: "/contact-us" },
+            ].map((item) => (
+              <div
+                key={item.path}
+                onClick={() => {
+                  navigate(item.path);
+                  setIsMenuOpen(false);
+                }}
+                className="px-6 py-2 text-white hover:bg-base-200 cursor-pointer">
+                <h3>{item.label}</h3>
+              </div>
+            ))}
+          </nav>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import express, { Router } from 'express';
-import { getCurrentUser, googleUser, login, logout, updateDetails, updatePassword, userRegister } from '../controller/user.controller';
+import { getCurrentUser, googleUser, login, logout, updateDetails, updatePassword, userRegister, setPassword } from '../controller/user.controller';
 import { verifyJWT } from '../middlewares/auth.middleware';
 
 const router: Router = express.Router();
@@ -11,6 +11,7 @@ router.route('/logout').post(verifyJWT, logout);
 router.route('/login').post(verifyJWT, login);
 router.route('/update-details').patch(verifyJWT, updateDetails);
 router.route('/update-password').patch(verifyJWT, updatePassword);
+router.route('/set-password').patch(verifyJWT, setPassword);
 
 
 export default router;

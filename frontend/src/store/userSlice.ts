@@ -1,7 +1,7 @@
 import {createSlice} from "@reduxjs/toolkit";
 
-const localData = localStorage.getItem("userData") ? JSON.parse(localStorage.getItem("userData") as string) : null;
-const localStatus = localStorage.getItem("status") ? JSON.parse(localStorage.getItem("status") as string) : false;
+const localData = sessionStorage.getItem("userData") ? JSON.parse(sessionStorage.getItem("userData") as string) : null;
+const localStatus = sessionStorage.getItem("status") ? JSON.parse(sessionStorage.getItem("status") as string) : false;
 
 const initialState = {userData: localData, status: localStatus};
 
@@ -16,18 +16,18 @@ const userSlice = createSlice({
         login: (state, action) => {
             state.userData = action.payload;
             state.status = true;
-            localStorage.setItem("userData", JSON.stringify(action.payload));
-            localStorage.setItem("status", JSON.stringify(true));
+            sessionStorage.setItem("userData", JSON.stringify(action.payload));
+            sessionStorage.setItem("status", JSON.stringify(true));
         },
         logout: (state) => {
             state.userData = null;
             state.status = false;
-            localStorage.removeItem("userData");
-            localStorage.setItem("status", JSON.stringify(false));
+            sessionStorage.removeItem("userData");
+            sessionStorage.setItem("status", JSON.stringify(false));
         },
         Update: (state, action) => {
             state.userData = action.payload;
-            localStorage.setItem("userData", JSON.stringify(action.payload));
+            sessionStorage.setItem("userData", JSON.stringify(action.payload));
         }
     },
 });

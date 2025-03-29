@@ -5,9 +5,12 @@ import TextStyle from "@tiptap/extension-text-style";
 import { useState } from "react";
 import Color from "@tiptap/extension-color";
 import FontFamily from "@tiptap/extension-font-family";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const Editor = () => {
+  const { state } = useLocation();
+  const { content } = state || {};
+
   const navigate = useNavigate();
   const [color, setColor] = useState("#000000");
   const [font, setFont] = useState("Arial");
@@ -24,13 +27,20 @@ const Editor = () => {
         types: ["textStyle"],
       }),
     ],
-    content: "<p>Welcome to the editor!</p>",
+    content: content ? content : "<p>Welcome to the editor!</p>",
   });
 
   const getContent = () => {
     if (editor) {
-      const content = editor.getHTML();
-      navigate("/blog-post", {state: {content}});
+      const content = editor.getText();
+      navigate("/blog-post", { state: { content } });
+    }
+  };
+
+  const getEditedContent = () => {
+    if (editor) {
+      const editedContent = editor.getText();
+      navigate("/update-blog", { state: { editedContent } });
     }
   };
 
@@ -127,13 +137,24 @@ const Editor = () => {
           Character count: {editor.getCharacterCount()}
         </div>
       )}
-      <div
-        onClick={() => {
+
+      {content ? (
+        <div
+          onClick={() => {
+            getEditedContent();
+          }}
+          className="inline-block absolute right-5">
+          <button className="btn btn-soft btn-success">Edit</button>
+        </div>
+      ) : (
+        <div
+          onClick={() => {
             getContent();
-        }}
-        className="inline-block absolute right-5">
-        <button className="btn btn-soft btn-success">Done</button>
-      </div>
+          }}
+          className="inline-block absolute right-5">
+          <button className="btn btn-soft btn-success">Done</button>
+        </div>
+      )}
       <footer className="editor-footer mt-4 text-center text-sm text-gray-500">
         <p>Powered by Tiptap</p>
       </footer>

@@ -15,14 +15,12 @@ import { useNavigate } from "react-router-dom";
 import { logout } from "@/store/userSlice";
 import { googleLogout } from "@react-oauth/google";
 
-
 function Profile() {
   const useTypedSelector: TypedUseSelectorHook<RootState> = useSelector;
   const status: boolean = useTypedSelector((state) => state.user.status);
   const user = useTypedSelector((state) => state.user.userData);
 
   const dispatch = useDispatch();
-
 
   const navigate = useNavigate();
 
@@ -54,7 +52,6 @@ function Profile() {
       googleLogout();
     }
   };
-
 
   return (
     <div>
@@ -88,12 +85,7 @@ function Profile() {
                 <p className="text-sm text-gray-400">{user?.email}</p>
               </div>
             </div>
-            <SheetDescription>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Error
-              pariatur ad tenetur ab explicabo quo obcaecati delectus maxime
-              debitis! Facere dicta repudiandae et aspernatur explicabo quasi
-              quis est ex neque?
-            </SheetDescription>
+            <SheetDescription></SheetDescription>
           </SheetHeader>
           <hr />
           <div
@@ -112,13 +104,23 @@ function Profile() {
             <div className="text-white font-semibold">Update details</div>
           </div>
           <hr />
-          <div
-            onClick={() => {
-              navigate("/update-password");
-            }}
-            className="w-full cursor-pointer p-4 hover:bg-primary rounded-lg">
-            <div className="text-white font-semibold">Change password</div>
-          </div>
+          {user?.source === "google" && !user?.password ? (
+            <div
+              onClick={() => {
+                navigate("/set-password");
+              }}
+              className="w-full cursor-pointer p-4 hover:bg-primary rounded-lg">
+              <div className="text-white font-semibold">Set password</div>
+            </div>
+          ) : (
+            <div
+              onClick={() => {
+                navigate("/update-password");
+              }}
+              className="w-full cursor-pointer p-4 hover:bg-primary rounded-lg">
+              <div className="text-white font-semibold">Change password</div>
+            </div>
+          )}
           <hr />
 
           <button

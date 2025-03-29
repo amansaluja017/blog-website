@@ -15,7 +15,12 @@ router.route('/post').post(upload.fields([
 
 router.route('/getBlogs').get(getAllBlogs);
 router.route('/getMyBlogs').get(myBlogs);
-router.route('/update-blog/:blogId').patch(updateBlog);
+router.route('/update-blog/:blogId').patch(upload.fields([
+    {
+        name: "coverImage",
+        maxCount: 1,
+    }
+]) , updateBlog);
 router.route('/delete-blog/:blogId').delete(deleteBlog);
 
 export default router;

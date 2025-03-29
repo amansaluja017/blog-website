@@ -60,60 +60,52 @@ function Blogs() {
 
   return (
     <div className="min-h-screen bg-base-200">
-      <div className="flex w-full justify-end p-3">
+      <div className="flex flex-col sm:flex-row justify-between items-center p-4 sm:p-6">
+        <div className="w-full sm:w-auto mb-4 sm:mb-0">
+          <label className="input-group w-full sm:w-80">
+            <input
+              ref={searchRef}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              type="search"
+              className="input input-bordered w-full text-white"
+              placeholder="Search blogs..."
+            />
+            <span className="bg-primary text-white">
+              <kbd className="kbd kbd-sm">⌘</kbd>
+              <kbd className="kbd kbd-sm">K</kbd>
+            </span>
+          </label>
+        </div>
         <button
-          onClick={() => {
-            navigate("/editor");
-          }}
-          className="btn btn-soft btn-accent">
+          onClick={() => navigate("/editor")}
+          className="btn btn-accent w-full sm:w-auto"
+        >
           Create Blog
         </button>
       </div>
-      <div className="px-4 sm:px-6 md:px-10 text-white">
-        <label className="input">
-          <svg
-            className="h-[1em] opacity-50"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24">
-            <g
-              strokeLinejoin="round"
-              strokeLinecap="round"
-              strokeWidth="2.5"
-              fill="none"
-              stroke="currentColor">
-              <circle cx="11" cy="11" r="8"></circle>
-              <path d="m21 21-4.3-4.3"></path>
-            </g>
-          </svg>
-          <input ref={searchRef} onChange={(e) => setSearchTerm(e.target.value)} type="search" className="grow" placeholder="Search" />
-          <kbd className="kbd kbd-sm">⌘</kbd>
-          <kbd className="kbd kbd-sm">K</kbd>
-        </label>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8 p-4 sm:p-6 md:p-10">
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4 sm:p-6">
         {blogs &&
-          value.map((blog, i) => {
-            return (
-              <div key={i} className="w-full">
-                <div className="card bg-base-100 w-full shadow-sm text-white">
-                  <figure className="h-48 w-full">
-                    <img
-                      src={blog.coverImage || "/default-cover.jpg"}
-                      alt={`${blog.title} cover image`}
-                      className="h-full w-full object-cover"
-                    />
-                  </figure>
-                  <div className="card-body">
-                    <h2 className="card-title">{blog.title}</h2>
-                    <p>{blog.description}</p>
-                    <div className="card-actions justify-end">
-                      <button className="btn btn-primary">Read</button>
-                    </div>
-                  </div>
+          value.map((blog, i) => (
+            <div key={i} className="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow">
+              <figure className="h-48 w-full">
+                <img
+                  src={blog.coverImage || "/default-cover.jpg"}
+                  alt={`${blog.title} cover`}
+                  className="w-full h-full object-cover"
+                />
+              </figure>
+              <div className="card-body">
+                <h2 className="card-title text-lg sm:text-xl line-clamp-2 text-white">
+                  {blog.title}
+                </h2>
+                <p className="text-sm line-clamp-3 text-white">{blog.description}</p>
+                <div className="card-actions justify-end mt-4">
+                  <button className="btn btn-primary btn-sm sm:btn-md">Read</button>
                 </div>
               </div>
-            );
-          })}
+            </div>
+          ))}
       </div>
     </div>
   );

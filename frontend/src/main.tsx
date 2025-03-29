@@ -22,6 +22,7 @@ import UpdateDetails from "./Pages/UpdateDetails";
 import UpdatePassword from "./Pages/UpdatePassword";
 import MyBlogs from "./Pages/MyBlogs";
 import UpdateBlog from "./Pages/UpdateBlog";
+import SetPassword from "./Pages/SetPassword";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -82,6 +83,14 @@ const router = createBrowserRouter(
         element={
           <UserProtected>
             <UpdateBlog />
+          </UserProtected>
+        }
+      />
+      <Route
+        path="/set-password"
+        element={
+          <UserProtected>
+            <SetPassword />
           </UserProtected>
         }
       />

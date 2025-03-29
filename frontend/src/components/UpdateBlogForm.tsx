@@ -15,75 +15,124 @@ import { useForm } from "react-hook-form";
 import axios from "axios";
 
 interface UpdateBlogFormProps extends React.ComponentProps<"div"> {
-    blog?: any;
+  blog?: any;
+  editedContent?: any;
 }
 
 interface FormData {
-    title: string;
-    description: string;
+  title: string;
+  description: string;
+  content: string;
 }
 
 export function UpdateBlogForm({
-    className,
-    blog,
-    ...props
+  className,
+  blog,
+  editedContent,
+  ...props
 }: UpdateBlogFormProps) {
-    const navigate = useNavigate();    
+  const navigate = useNavigate();
 
-    const { register, handleSubmit } = useForm<FormData>();
+  const { register, handleSubmit } = useForm<FormData>();
 
-    const submit = async (data: FormData) => {
-        try {
-            const response = await axios.patch(
-                `${import.meta.env.VITE_BASE_URL}/api/v1/blogs/update-blog/${blog._id}`,
-                data,
-                { withCredentials: true }
-            );
-            if (response.status === 200) {
-                navigate("/my-blogs");
-            }
-        } catch (error) {
-            console.error(error);
+  const submit = async (data: FormData) => {
+    const formData = new FormData();
+    Object.keys(data).forEach(key => {
+      formData.append(key, key === "coverImage" ? data[key][0] : data[key]);
+    })
+    try {
+      const response = await axios.patch(
+        `${import.meta.env.VITE_BASE_URL}/api/v1/blogs/update-blog/${blog._id}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          withCredentials: true,
         }
-    };
+      );
+      if (response.status === 200) {
+        localStorage.removeItem("blog");
+        navigate("/my-blogs");
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-    return (
-        <div className={cn("flex flex-col gap-6 ", className)} {...props}>
-            <Card className="bg-[#191E24] text-white border-[#0c0f13] shadow-2xl">
-                <CardHeader>
-                    <CardTitle>Update Blog</CardTitle>
-                    <CardDescription></CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <form onSubmit={handleSubmit(submit)}>
-                        <div className="flex flex-col gap-6">
-                            <div className="grid gap-3">
-                                <Label htmlFor="currPassword">Title</Label>
-                                <Input
-                                    id="title"
-                                    type="text"
-                                    defaultValue={blog.title}
-                                    {...register("title")}
-                                />
-                            </div>
-                            <div className="grid gap-3">
-                                <Label htmlFor="newPassword">Description</Label>
-                                <Input
-                                    id="description"
-                                    type="text"
-                                    defaultValue={blog.description}
-                                    {...register("description")}
-                                />
-                            </div>
-                            <div className="flex flex-col gap-3">
-                                <Button type="submit" className="w-full cursor-pointer">
-                                    Update
-                                </Button>
-                            </div>
-                        </div>
-                    </form>
-                </CardContent>
-            </Card>
-        </div>
-    );
+  return (
+    <div className={cn("flex flex-col gap-6 ", className)} {...props}>
+      <Card className="bg-[#191E24] text-white border-[#0c0f13] shadow-2xl">
+        <CardHeader>
+          <CardTitle>Update Blog</CardTitle>
+          <CardDescription></CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit(submit)}>
+            <div className="flex flex-col gap-6">
+              <div className="grid gap-3">
+                <Label htmlFor="currPassword">Title</Label>
+                <Input
+                  id="title"
+                  type="text"
+                  defaultValue={blog?.title}
+                  {...register("title")}
+                />
+              </div>
+              <div className="grid gap-3">
+                <Label htmlFor="newPassword">Description</Label>
+                <Input
+                  id="description"
+                  type="text"
+                  defaultValue={blog?.description}
+                  {...register("description")}
+                />
+              </div>
+              <div className="grid gap-3">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="newPassword">Content</Label>
+                  <span
+                    onClick={() =>
+                      navigate("/editor", { state: { content: blog.content } })
+                    }
+                    className="text-red-500 text-sm cursor-pointer hover:underline">
+                    Edit
+                  </span>
+                </div>
+                <Input
+                  id="content"
+                  type="text"
+                  defaultValue={editedContent ? editedContent : blog?.content}
+                  readOnly
+                  {...register("content")}
+                />
+              </div>
+              <div className="grid gap-3">
+                <Label htmlFor="coverImage">Cover image</Label>
+                <input
+                  id="coverImage"
+                  type="file"
+                  className="file-input file-input-ghost"
+                  {...register("coverImage")}
+                />
+              </div>
+              <div className="flex flex-col gap-3">
+                <Button type="submit" className="w-full cursor-pointer">
+                  Update
+                </Button>
+              </div>
+            </div>
+          </form>
+          <div
+            onClick={() => {
+              navigate("/my-blogs");
+              localStorage.removeItem("blog");
+            }}
+            className="flex flex-col gap-3 mt-5">
+            <Button className="w-full cursor-pointer">Cancel</Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
 }

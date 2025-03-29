@@ -188,3 +188,25 @@ export const updatePassword = asyncHandler(async(req: Request, res: Response) =>
 
     return res.status(200).json(new ApiResponse(200, null, "Password updated successfully"));
 });
+
+export const setPassword = asyncHandler(async(req: Request, res: Response) => {
+    const { password, confirmPassword } = req.body;
+
+    if (!password || !confirmPassword) {
+        throw new ApiError(400, "All fields are required");
+    }
+
+    const user = await User.findOne({ _id: req.user?._id });
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    if (password!== confirmPassword) {
+        throw new ApiError(400, "Passwords do not match");
+    }
+
+    user.password = confirmPassword;
+    await user.save();
+
+    return res.status(200).json(new ApiResponse(200, user, "Password updated successfully"));
+});

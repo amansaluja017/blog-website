@@ -6,14 +6,14 @@ import { RootState } from "@/store/confStore";
 import { Pencil, Trash } from "lucide-react";
 
 export interface blogObject {
-    _id: string;
-    title: string;
-    description: string;
-    content: string;
-    createdAt: string;
-    updatedAt: string;
-    author: string;
-    coverImage: string;
+  _id: string;
+  title: string;
+  description: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+  author: string;
+  coverImage: string;
 }
 function MyBlogs() {
   const [blogs, setBlogs] = useState<blogObject[]>([]);
@@ -43,68 +43,71 @@ function MyBlogs() {
 
   return (
     <div className="min-h-screen bg-base-200">
-      <div className="flex w-full justify-end p-3">
+      <div className="flex justify-end p-4 sm:p-6">
         <button
-          onClick={() => {
-            navigate("/editor");
-          }}
-          className="btn btn-soft btn-accent">
+          onClick={() => navigate("/editor")}
+          className="btn btn-accent w-full sm:w-auto"
+        >
           Create Blog
         </button>
       </div>
-      <div className="h-screen">
+      <div className="p-4 sm:p-6">
         {blogs.length > 0 ? (
-          blogs.map((blog, i) => {
-            return (
-              <div key={i} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8 p-4 sm:p-6 md:p-10">
-                <div className="w-full">
-                  <div className="card bg-base-100 w-full shadow-sm text-white">
-                    <figure className="h-48 w-full">
-                      <img
-                        src={blog.coverImage || "/default-cover.jpg"}
-                        alt={`${blog.title} cover image`}
-                        className="h-full w-full object-cover"
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {blogs.map((blog, i) => (
+              <div key={i} className="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow">
+                <figure className="h-48">
+                  <img
+                    src={blog.coverImage || "/default-cover.jpg"}
+                    alt={blog.title}
+                    className="w-full h-full object-cover"
+                  />
+                </figure>
+                <div className="card-body p-4">
+                  <h2 className="card-title text-lg sm:text-xl mb-2 line-clamp-2 text-white">{blog.title}</h2>
+                  <p className="text-sm text-gray-400 line-clamp-3">{blog.description}</p>
+                  <div className="card-actions justify-between items-center mt-4">
+                    <div className="flex gap-2">
+                      <Pencil
+                        onClick={() => {
+                          navigate("/update-blog", { state: { blog } });
+                          window.location.reload();
+                        }}
+                        className="w-5 h-5 cursor-pointer text-blue-500 hover:text-blue-700"
                       />
-                    </figure>
-                    <div className="card-body">
-                      <h2 className="card-title">{blog.title}</h2>
-                      <p>{blog.description}</p>
-                      <div className="card-actions justify-end items-center">
-                        <div className="flex absolute left-8 gap-5 bottom-5">
-                          <Pencil
-                            onClick={() =>
-                              navigate("/update-blog", { state: { blog } })
+                      <Trash
+                        onClick={async () => {
+                          try {
+                            const response = await axios.delete(
+                              `${import.meta.env.VITE_BASE_URL}/api/v1/blogs/delete-blog/${blog._id}`,
+                              { withCredentials: true }
+                            );
+                            if (response.status === 200) {
+                              setBlogs((prevBlogs) =>
+                                prevBlogs.filter((b) => b._id !== blog._id)
+                              );
                             }
-                            className="cursor-pointer text-blue-300"
-                          />
-                          <Trash
-                            onClick={async () => {
-                                try {
-                                    const response = await axios.delete(
-                                        `${import.meta.env.VITE_BASE_URL}/api/v1/blogs/delete-blog/${blog._id}`,
-                                        { withCredentials: true }
-                                    );
-                                    if(response.status === 200) {
-                                        window.location.reload();
-                                    }
-                                } catch (error) {
-                                    console.error(error);
-                                }
-                            }}
-                            className="cursor-pointer text-red-400"
-                          />
-                        </div>
-                        <button className="btn btn-primary">Read</button>
-                      </div>
+                          } catch (error) {
+                            console.error(error);
+                          }
+                        }}
+                        className="w-5 h-5 cursor-pointer text-red-500 hover:text-red-700"
+                      />
                     </div>
+                    <button
+                      onClick={() => navigate(`/blog/${blog._id}`)}
+                      className="btn btn-primary btn-sm"
+                    >
+                      Read
+                    </button>
                   </div>
                 </div>
               </div>
-            );
-          })
+            ))}
+          </div>
         ) : (
-          <div className="flex items-center justify-center w-full h-full ">
-            <h1 className="text-white text-lg font-normal">No blogs found</h1>
+          <div className="flex items-center justify-center h-[60vh]">
+            <h1 className="text-gray-500 text-lg font-medium">No blogs found</h1>
           </div>
         )}
       </div>

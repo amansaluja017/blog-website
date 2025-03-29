@@ -71,16 +71,38 @@ export const myBlogs = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const updateBlog = asyncHandler(async (req: Request, res: Response) => {
-    const { title, description }: { title: string, description: string } = req.body;
+    const { title, description, content }: { title: string, description: string, content: string } = req.body;
     const { blogId } = req.params;
 
     if(!blogId) {
         throw new ApiError(400, "Blog id is required");
     };
 
+    if (!req.files || !('coverImage' in req.files)) {
+        throw new ApiError(400, "Cover image is required");
+    }
+
+    const files = req.files as { [key: string]: { path: string }[] };
+    if (!files.coverImage || !Array.isArray(files.coverImage) || files.coverImage.length === 0) {
+        throw new ApiError(400, "Cover image is required");
+    }
+    const coverImagePath = files.coverImage[0].path;
+
+    if (!coverImagePath) {
+        throw new ApiError(400, "Cover image is required");
+    }
+
+    const coverImage = await uploadImage(coverImagePath);
+
+    if (!coverImage) {
+        throw new ApiError(500, "Failed to upload cover image");
+    }
+
     const blog = await Blog.findByIdAndUpdate(blogId, {
         title,
-        description
+        description,
+        content,
+        coverImage
     }, { new: true });
 
     if (!blog) {

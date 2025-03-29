@@ -20,6 +20,7 @@ interface PostCardProps {
 }
 
 function PostCard(props: PostCardProps) {
+  console.log(props.postContent);
   const navigate = useNavigate();
   const { register, handleSubmit } = useForm();
   const useTypedSelector: TypedUseSelectorHook<RootState> = useSelector;
@@ -74,10 +75,10 @@ function PostCard(props: PostCardProps) {
             <div className="flex flex-col space-y-1.5">
               <Label htmlFor="name">Content</Label>
               <Input
-                id="Content"
-                placeholder="Content of your project"
-                defaultValue={props.postContent}
-                {...register("content", { required: true })}
+              id="Content"
+              placeholder="Content of your project"
+              defaultValue={props.postContent}
+              {...register("content", { required: true })}
               />
             </div>
             <div className="flex flex-col space-y-1.5">
