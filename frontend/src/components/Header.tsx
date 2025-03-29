@@ -3,6 +3,16 @@ import { useNavigate } from "react-router-dom";
 import { TypedUseSelectorHook, useSelector } from "react-redux";
 import { RootState } from "@/store/confStore";
 import { useState } from "react";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuIndicator,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  NavigationMenuViewport,
+} from "@/components/ui/navigation-menu";
 
 export interface userInterface {
   firstName: string;
@@ -39,12 +49,17 @@ function Header() {
                 { label: "About", path: "/about" },
                 { label: "Contact Us", path: "/contact-us" },
               ].map((item) => (
-                <div
-                  key={item.path}
-                  onClick={() => navigate(item.path)}
-                  className="cursor-pointer text-white hover:text-primary transition-colors">
-                  <h3 className="text-sm lg:text-base">{item.label}</h3>
-                </div>
+                <NavigationMenu key={item.path}>
+                  <NavigationMenuList>
+                    <NavigationMenuItem>
+                      <NavigationMenuLink
+                        onClick={() => navigate(item.path)}
+                        className="cursor-pointer">
+                        {item.label}
+                      </NavigationMenuLink>
+                    </NavigationMenuItem>
+                  </NavigationMenuList>
+                </NavigationMenu>
               ))}
             </nav>
           )}

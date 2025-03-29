@@ -84,7 +84,10 @@ export function LoginForm({
                 <Button type="submit" className="w-full cursor-pointer">
                   Login
                 </Button>
-                <GoogleLoginButton />
+                <hr />
+                <div className="mt-2">
+                  <GoogleLoginButton />
+                </div>
               </div>
             </div>
             <div
