@@ -30,7 +30,7 @@ export function SignupForm({
         const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/v1/users/register`, data, {withCredentials: true});
         if(response.status === 201) {
           dispatch(signup(response.data.data));
-          navigate('/blogs');
+          navigate('/login');
         }
       } catch (error) {
         console.error(error);

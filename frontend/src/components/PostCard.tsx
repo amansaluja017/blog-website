@@ -78,6 +78,7 @@ function PostCard(props: PostCardProps) {
               id="Content"
               placeholder="Content of your project"
               defaultValue={props.postContent}
+              readOnly
               {...register("content", { required: true })}
               />
             </div>

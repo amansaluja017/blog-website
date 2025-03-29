@@ -59,7 +59,7 @@ function Profile() {
         <SheetTrigger>
           <Avatar className="cursor-pointer">
             <AvatarImage
-              src={user?.avatar}
+              src={user?.avatar || "./public/avatar.jpg"}
               alt={`${user?.firstName} ${user?.lastName}`}
             />
             <AvatarFallback>{`${user?.firstName?.[0] || ""}${
@@ -77,7 +77,7 @@ function Profile() {
             <div className="flex justify-center items-center flex-col text-center mt-6">
               <div className="avatar">
                 <div className="ring-primary ring-offset-base-100 w-24 h-24 rounded-full ring ring-offset-2 overflow-hidden">
-                  <img src={user?.avatar} alt="User Avatar" />
+                  <img src={user?.avatar || "./public/avatar.jpg"} alt="User Avatar" />
                 </div>
               </div>
               <div className="flex flex-col gap-2 mt-4">

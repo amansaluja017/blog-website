@@ -66,7 +66,7 @@ export function UpdatePasswordForm({
                   id="newPassword"
                   type="password"
                   placeholder="new password"
-                  {...register("NewPassword")}
+                  {...register("newPassword")}
                 />
               </div>
               <div className="flex flex-col gap-3">
