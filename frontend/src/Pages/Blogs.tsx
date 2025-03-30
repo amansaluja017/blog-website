@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { TypedUseSelectorHook, useSelector } from "react-redux";
 import { RootState } from "@/store/confStore";
+import { OtpSection } from "@/components/OtpSection";
 
 interface blogObject {
   id: string;
@@ -22,7 +23,7 @@ function Blogs() {
   const searchRef = useRef(null);
   const navigate = useNavigate();
   const useTypedSelector: TypedUseSelectorHook<RootState> = useSelector;
-  const status: boolean = useTypedSelector(state => state.user.status);
+  const status: boolean = useTypedSelector((state) => state.user.status);
 
   useEffect(() => {
     const fetchBlogs = async () => {
@@ -35,26 +36,24 @@ function Blogs() {
         setBlogs(response.data.data);
       }
     };
-    if (status)  {
+    if (status) {
       fetchBlogs();
     }
   }, [status]);
 
   useEffect(() => {
-    const filterBlogs = blogs.filter(blog => {
-      return (
-        Object.values(blog)
+    const filterBlogs = blogs.filter((blog) => {
+      return Object.values(blog)
         .join("")
         .toLowerCase()
-        .includes(searchTerm.toLowerCase())
-      )
-    })
+        .includes(searchTerm.toLowerCase());
+    });
     setSearchBlogs(filterBlogs);
 
-    if(searchTerm.length < 1) {
-      setValue(blogs)
+    if (searchTerm.length < 1) {
+      setValue(blogs);
     } else {
-      setValue(filterBlogs)
+      setValue(filterBlogs);
     }
   }, [searchTerm, blogs]);
 
@@ -78,8 +77,7 @@ function Blogs() {
         </div>
         <button
           onClick={() => navigate("/editor")}
-          className="btn btn-accent w-full sm:w-auto"
-        >
+          className="btn btn-accent w-full sm:w-auto">
           Create Blog
         </button>
       </div>
@@ -87,7 +85,9 @@ function Blogs() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4 sm:p-6">
         {blogs &&
           value.map((blog, i) => (
-            <div key={i} className="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow">
+            <div
+              key={i}
+              className="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow">
               <figure className="h-48 w-full">
                 <img
                   src={blog.coverImage || "/default-cover.jpg"}
@@ -99,9 +99,13 @@ function Blogs() {
                 <h2 className="card-title text-lg sm:text-xl line-clamp-2 text-white">
                   {blog.title}
                 </h2>
-                <p className="text-sm line-clamp-3 text-white">{blog.description}</p>
+                <p className="text-sm line-clamp-3 text-white">
+                  {blog.description}
+                </p>
                 <div className="card-actions justify-end mt-4">
-                  <button className="btn btn-primary btn-sm sm:btn-md">Read</button>
+                  <button className="btn btn-primary btn-sm sm:btn-md">
+                    Read
+                  </button>
                 </div>
               </div>
             </div>

@@ -17,13 +17,15 @@ export interface blogObject {
 }
 function MyBlogs() {
   const [blogs, setBlogs] = useState<blogObject[]>([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const useTypedSelector: TypedUseSelectorHook<RootState> = useSelector;
   const status: boolean = useTypedSelector((state) => state.user.status);
 
   useEffect(() => {
-    try {
-      const fetchBlogs = async () => {
+    const fetchBlogs = async () => {
+      setLoading(true);
+      try {
         const response = await axios.get(
           `${import.meta.env.VITE_BASE_URL}/api/v1/blogs/getMyBlogs`,
           { withCredentials: true }
@@ -32,12 +34,15 @@ function MyBlogs() {
         if (response.status === 200 && response.data.status === 200) {
           setBlogs(response.data.data);
         }
-      };
-      if (status) {
-        fetchBlogs();
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error(error);
+    };
+
+    if (status) {
+      fetchBlogs();
     }
   }, [status]);
 
@@ -46,16 +51,18 @@ function MyBlogs() {
       <div className="flex justify-end p-4 sm:p-6">
         <button
           onClick={() => navigate("/editor")}
-          className="btn btn-accent w-full sm:w-auto"
-        >
+          className="btn btn-accent w-full sm:w-auto">
           Create Blog
         </button>
       </div>
       <div className="p-4 sm:p-6">
-        {blogs.length > 0 ? (
+        {loading && <div className="skeleton h-32 w-32"></div>}
+        {!loading && blogs.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {blogs.map((blog, i) => (
-              <div key={i} className="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow">
+              <div
+                key={i}
+                className="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow">
                 <figure className="h-48">
                   <img
                     src={blog.coverImage || "/default-cover.jpg"}
@@ -64,8 +71,12 @@ function MyBlogs() {
                   />
                 </figure>
                 <div className="card-body p-4">
-                  <h2 className="card-title text-lg sm:text-xl mb-2 line-clamp-2 text-white">{blog.title}</h2>
-                  <p className="text-sm text-gray-400 line-clamp-3">{blog.description}</p>
+                  <h2 className="card-title text-lg sm:text-xl mb-2 line-clamp-2 text-white">
+                    {blog.title}
+                  </h2>
+                  <p className="text-sm text-gray-400 line-clamp-3">
+                    {blog.description}
+                  </p>
                   <div className="card-actions justify-between items-center mt-4">
                     <div className="flex gap-2">
                       <Pencil
@@ -79,7 +90,9 @@ function MyBlogs() {
                         onClick={async () => {
                           try {
                             const response = await axios.delete(
-                              `${import.meta.env.VITE_BASE_URL}/api/v1/blogs/delete-blog/${blog._id}`,
+                              `${
+                                import.meta.env.VITE_BASE_URL
+                              }/api/v1/blogs/delete-blog/${blog._id}`,
                               { withCredentials: true }
                             );
                             if (response.status === 200) {
@@ -96,8 +109,7 @@ function MyBlogs() {
                     </div>
                     <button
                       onClick={() => navigate(`/blog/${blog._id}`)}
-                      className="btn btn-primary btn-sm"
-                    >
+                      className="btn btn-primary btn-sm">
                       Read
                     </button>
                   </div>
@@ -107,7 +119,9 @@ function MyBlogs() {
           </div>
         ) : (
           <div className="flex items-center justify-center h-[60vh]">
-            <h1 className="text-gray-500 text-lg font-medium">No blogs found</h1>
+            <h1 className="text-gray-500 text-lg font-medium">
+              No blogs found
+            </h1>
           </div>
         )}
       </div>

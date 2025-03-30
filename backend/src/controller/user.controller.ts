@@ -5,6 +5,9 @@ import { ApiResponse } from "../utils/ApiResponse";
 import { asyncHandler } from "../utils/asyncHandler";
 import { GoogleAuth, OAuth2Client } from "google-auth-library";
 import mongoose, { ObjectId } from "mongoose";
+import crypto from "crypto";
+import nodemailer from "nodemailer"
+import { mailOptions } from "../../nodemailer/nodemailerConfig";
 
 interface userTypes {
     firstName: string;
@@ -80,7 +83,7 @@ export const googleUser = asyncHandler(async (req: Request, res: Response) => {
     }
     console.log("User info:", payload);
 
-    const { email, given_name, family_name, picture } = payload;
+    const { email, given_name, family_name, picture, email_verified } = payload;
 
     const existedUser = await User.findOne({ email });
 
@@ -97,7 +100,8 @@ export const googleUser = asyncHandler(async (req: Request, res: Response) => {
         avatar: picture,
         source: "google",
         accessToken: token,
-    })
+        email_verified,
+    });
 
     if (!user) {
         throw new ApiError(500, "Failed to register user");
@@ -153,7 +157,7 @@ export const logout = asyncHandler(async (req: Request, res: Response) => {
     return res.clearCookie("accessToken").clearCookie("refreshToken").json(new ApiResponse(200, null, "User logged out successfully"));
 });
 
-export const updateDetails = asyncHandler(async(req: Request, res: Response) => {
+export const updateDetails = asyncHandler(async (req: Request, res: Response) => {
     const { firstName, lastName, email, avatar } = req.body;
 
     const user = await User.findOneAndUpdate({ _id: req.user?._id }, { firstName, lastName, email, avatar }, { new: true });
@@ -165,7 +169,7 @@ export const updateDetails = asyncHandler(async(req: Request, res: Response) => 
     return res.status(200).json(new ApiResponse(200, user, "User details updated successfully"));
 });
 
-export const updatePassword = asyncHandler(async(req: Request, res: Response) => {
+export const updatePassword = asyncHandler(async (req: Request, res: Response) => {
     const { currentPassword, newPassword } = req.body;
 
     if (!currentPassword || !newPassword) {
@@ -189,7 +193,7 @@ export const updatePassword = asyncHandler(async(req: Request, res: Response) =>
     return res.status(200).json(new ApiResponse(200, user, "Password updated successfully"));
 });
 
-export const setPassword = asyncHandler(async(req: Request, res: Response) => {
+export const setPassword = asyncHandler(async (req: Request, res: Response) => {
     const { password, confirmPassword } = req.body;
 
     if (!password || !confirmPassword) {
@@ -201,7 +205,7 @@ export const setPassword = asyncHandler(async(req: Request, res: Response) => {
         throw new ApiError(404, "User not found");
     }
 
-    if (password!== confirmPassword) {
+    if (password !== confirmPassword) {
         throw new ApiError(400, "Passwords do not match");
     }
 
@@ -209,4 +213,49 @@ export const setPassword = asyncHandler(async(req: Request, res: Response) => {
     await user.save();
 
     return res.status(200).json(new ApiResponse(200, user, "Password updated successfully"));
+});
+
+export const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
+    const user = await User.findById(req.user?._id);
+
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    const email = user.email;
+
+    const getOtp = (num: number) => {
+        const otp = crypto.randomInt(Math.pow(10, num - 1), Math.pow(10, num)).toString();
+        return otp;
+    }
+
+    const otp = getOtp(6);
+
+    if(!otp) {
+        throw new ApiError(500, "internal error: Failed to gernate otp");
+    }
+
+    mailOptions(email, "YourBlogs", `your otp for email varification is ${otp}`);
+
+    return res.status(200).json(new ApiResponse(200, otp, "success"));
+});
+
+export const verifyOtp = asyncHandler(async(req: Request, res: Response) => {
+    const {otp, value} = req.body;
+
+    if(!otp || !value) {
+        throw new ApiError(400, "All fields are required");
+    }
+
+    if(otp !== value) {
+        throw new ApiError(400, "Invalid otp");
+    }
+
+    const user = await User.findByIdAndUpdate(req.user?._id, { email_verified: true }, { new: true });
+
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    return res.status(200).json(new ApiResponse(200, user, "Email verified successfully"));
 });

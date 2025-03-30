@@ -28,6 +28,10 @@ const userSchema = new Schema(
             type: String,
             enum: ["local", "google"]
         },
+        email_verified: {
+            type: Boolean,
+            default: false
+        },
         accessToken: {
             type: String,
         },

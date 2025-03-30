@@ -8,3 +8,12 @@ backend/dist/src/app.js
 backend/dist/src/index.js
 frontend/.env
 frontend/bun.lock
+backend/dist/src/controller/blog.controller.js
+backend/dist/src/controller/user.controller.js
+backend/dist/src/middlewares/auth.middleware.js
+backend/dist/src/middlewares/multer.middleware.js
+backend/dist/src/models/blog.model.js
+backend/dist/src/models/user.model.js
+backend/dist/src/nodemailer/nodemailerConfig.js
+backend/dist/src/routes/blog.routes.js
+backend/dist/src/routes/user.routes.js

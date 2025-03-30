@@ -3,22 +3,29 @@ import {
   SheetContent,
   SheetDescription,
   SheetHeader,
+  SheetOverlay,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useSelector, TypedUseSelectorHook, useDispatch } from "react-redux";
 import { RootState } from "@/store/confStore";
 import { useNavigate } from "react-router-dom";
 import { logout } from "@/store/userSlice";
 import { googleLogout } from "@react-oauth/google";
+import { OtpSection } from "./OtpSection";
+import { BadgeCheck } from "lucide-react";
 
 function Profile() {
   const useTypedSelector: TypedUseSelectorHook<RootState> = useSelector;
   const status: boolean = useTypedSelector((state) => state.user.status);
   const user = useTypedSelector((state) => state.user.userData);
+
+  const [otpSection, setOtpSection] = useState(false);
+  const [otp, setOtp] = useState("");
+  const otpRef = useRef<HTMLDivElement>(null);
 
   const dispatch = useDispatch();
 
@@ -53,6 +60,30 @@ function Profile() {
     }
   };
 
+  useEffect(() => {
+    if (otpSection) {
+      otpRef.current?.classList.remove("hidden");
+      otpRef.current?.classList.add("flex");
+    }
+
+    return () => setOtpSection(false);
+  }, [otpSection]);
+
+  const emailVarification = async () => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/api/v1/users/email-verify`,
+        { withCredentials: true }
+      );
+      if (response.status === 200) {
+        setOtp(response.data.data);
+      }
+      setOtpSection(true);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div>
       <Sheet>
@@ -68,6 +99,11 @@ function Profile() {
           </Avatar>
         </SheetTrigger>
         <SheetContent className="bg-[#1D232A] p-6 rounded-lg">
+          <div
+            ref={otpRef}
+            className="z-50 absolute h-screen w-full items-center justify-center backdrop-blur-sm text-white hidden">
+            <OtpSection otp={otp} otpRef={otpRef} />
+          </div>
           <SheetHeader>
             <SheetTitle>
               <span className="font-sans text-white text-xl font-bold">
@@ -77,12 +113,26 @@ function Profile() {
             <div className="flex justify-center items-center flex-col text-center mt-6">
               <div className="avatar">
                 <div className="ring-primary ring-offset-base-100 w-24 h-24 rounded-full ring ring-offset-2 overflow-hidden">
-                  <img src={user?.avatar || "./public/avatar.jpg"} alt="User Avatar" />
+                  <img
+                    src={user?.avatar || "./public/avatar.jpg"}
+                    alt="User Avatar"
+                  />
                 </div>
               </div>
               <div className="flex flex-col gap-2 mt-4">
                 <h3 className="text-white font-semibold text-lg">{`${user?.firstName} ${user?.lastName}`}</h3>
-                <p className="text-sm text-gray-400">{user?.email}</p>
+                <div className="flex items-center justify-center">
+                  <p className="text-sm text-gray-400">{user?.email}</p>
+                  {user?.email_verified ? (
+                    <BadgeCheck className="text-green-500 ml-3" />
+                  ) : (
+                    <span
+                      onClick={() => emailVarification()}
+                      className="text-blue-500 hover:underline text-sm cursor-pointer relative left-3">
+                      verify
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
             <SheetDescription></SheetDescription>
