@@ -23,6 +23,7 @@ import UpdatePassword from "./Pages/UpdatePassword";
 import MyBlogs from "./Pages/MyBlogs";
 import UpdateBlog from "./Pages/UpdateBlog";
 import SetPassword from "./Pages/SetPassword";
+import ForgotPassword from "./Pages/ForgotPassword";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -94,6 +95,7 @@ const router = createBrowserRouter(
           </UserProtected>
         }
       />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
     </Route>
   )
 );

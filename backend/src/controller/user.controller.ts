@@ -42,6 +42,11 @@ const generateAccessAndRefreshToken = async (userId: ObjectId) => {
     return { accessToken, refreshToken };
 };
 
+const getOtp = (num: number) => {
+    const otp = crypto.randomInt(Math.pow(10, num - 1), Math.pow(10, num)).toString();
+    return otp;
+}
+
 
 export const userRegister = asyncHandler(async (req: Request, res: Response) => {
     const { firstName, lastName, email, password, avatar }: userTypes = req.body;
@@ -224,11 +229,6 @@ export const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
 
     const email = user.email;
 
-    const getOtp = (num: number) => {
-        const otp = crypto.randomInt(Math.pow(10, num - 1), Math.pow(10, num)).toString();
-        return otp;
-    }
-
     const otp = getOtp(6);
 
     if(!otp) {
@@ -258,4 +258,24 @@ export const verifyOtp = asyncHandler(async(req: Request, res: Response) => {
     }
 
     return res.status(200).json(new ApiResponse(200, user, "Email verified successfully"));
+});
+
+export const checkUser = asyncHandler(async(req: Request, res: Response) => {
+    const {email} = req.body;
+
+    const user = await User.findOne({email});
+
+    if(!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    const otp = getOtp(6);
+
+    if(!otp) {
+        throw new ApiError(500, "internal error: Failed to generate otp");
+    }
+
+    mailOptions(email, "Forgot Password", `your otp for forgot password is ${otp}`);
+
+    return res.status(200).json(new ApiResponse(200, {user, otp}, "User found successfully"));
 });

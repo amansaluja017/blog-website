@@ -41,27 +41,23 @@ export function OtpSection({
   };
 
   return (
-    <>
-      <div className="flex flex-col gap-8">
-        <InputOTP onChange={(e) => setValue(e)} maxLength={6}>
-          <InputOTPGroup>
-            <InputOTPSlot index={0} />
-            <InputOTPSlot index={1} />
-            <InputOTPSlot index={2} />
-          </InputOTPGroup>
-          <InputOTPSeparator />
-          <InputOTPGroup>
-            <InputOTPSlot index={3} />
-            <InputOTPSlot index={4} />
-            <InputOTPSlot index={5} />
-          </InputOTPGroup>
-        </InputOTP>
-        <button
-          onClick={() => submit()}
-          className="btn btn-outline btn-success">
-          Submit
-        </button>
-      </div>
-    </>
+    <div className="flex flex-col gap-8">
+      <InputOTP onChange={(e) => setValue(e)} maxLength={6}>
+        <InputOTPGroup>
+          <InputOTPSlot index={0} />
+          <InputOTPSlot index={1} />
+          <InputOTPSlot index={2} />
+        </InputOTPGroup>
+        <InputOTPSeparator />
+        <InputOTPGroup>
+          <InputOTPSlot index={3} />
+          <InputOTPSlot index={4} />
+          <InputOTPSlot index={5} />
+        </InputOTPGroup>
+      </InputOTP>
+      <button onClick={() => submit()} className="btn btn-outline btn-success">
+        Submit
+      </button>
+    </div>
   );
 }
