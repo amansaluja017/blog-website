@@ -24,6 +24,10 @@ import MyBlogs from "./Pages/MyBlogs";
 import UpdateBlog from "./Pages/UpdateBlog";
 import SetPassword from "./Pages/SetPassword";
 import ForgotPassword from "./Pages/ForgotPassword";
+import CreatePassword from "./Pages/CreateNewPassword";
+import About from "./Pages/About";
+import ContactUs from "./Pages/ContactUs";
+import Content from "./Pages/Content";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -96,6 +100,17 @@ const router = createBrowserRouter(
         }
       />
       <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/create-password" element={<CreatePassword />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/contact-us" element={<ContactUs />} />
+      <Route
+        path="/content"
+        element={
+          <UserProtected>
+            <Content />
+          </UserProtected>
+        }
+      />
     </Route>
   )
 );

@@ -6,7 +6,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { useForm } from "react-hook-form";
+import { set, useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -28,10 +28,12 @@ function ForgotPasswordForm({
 
   const [otpPanel, setOtpPanel] = useState(false);
   const [value, setValue] = useState("");
+  const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const navigate = useNavigate();
 
   const submit = async (data: any) => {
+    setEmail(data.email);
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/api/v1/users/check-user`,
@@ -53,7 +55,7 @@ function ForgotPasswordForm({
       alert("Invalid OTP");
       return;
     }
-    navigate("/set-password");
+    navigate("/create-password", {state: {email}});
   };
 
   return (

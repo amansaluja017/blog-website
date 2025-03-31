@@ -88,15 +88,16 @@ function Profile() {
     <div>
       <Sheet>
         <SheetTrigger>
-          <Avatar className="cursor-pointer">
+            <Avatar className="cursor-pointer ring-2 ring-offset-2 ring-primary">
             <AvatarImage
-              src={user?.avatar || "./public/avatar.jpg"}
-              alt={`${user?.firstName} ${user?.lastName}`}
+              src={user?.avatar || "/avatar.jpg"}
+              alt={`${user?.firstName || "User"} ${user?.lastName || ""}`}
+              className="object-cover"
             />
-            <AvatarFallback>{`${user?.firstName?.[0] || ""}${
-              user?.lastName?.[0] || ""
-            }`}</AvatarFallback>
-          </Avatar>
+            <AvatarFallback className="bg-gray-500 text-white font-bold">
+              {`${user?.firstName?.[0] || ""}${user?.lastName?.[0] || ""}`}
+            </AvatarFallback>
+            </Avatar>
         </SheetTrigger>
         <SheetContent className="bg-[#1D232A] p-6 rounded-lg">
           <div

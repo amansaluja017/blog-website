@@ -56,8 +56,8 @@ function MyBlogs() {
         </button>
       </div>
       <div className="p-4 sm:p-6">
-        {loading && <div className="skeleton h-32 w-32"></div>}
-        {!loading && blogs.length > 0 ? (
+        {loading && <div className="skeleton h-[18rem] w-[22rem]"></div>}
+        {!loading && blogs.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {blogs.map((blog, i) => (
               <div
@@ -117,12 +117,9 @@ function MyBlogs() {
               </div>
             ))}
           </div>
-        ) : (
-          <div className="flex items-center justify-center h-[60vh]">
-            <h1 className="text-gray-500 text-lg font-medium">
-              No blogs found
-            </h1>
-          </div>
+        )}
+        {!loading && blogs.length === 0 && (
+          <div className="text-center text-gray-400">No blogs found.</div>
         )}
       </div>
     </div>

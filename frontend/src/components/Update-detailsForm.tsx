@@ -29,11 +29,20 @@ export function UpdateDetailsForm({
   const { register, handleSubmit } = useForm();
 
   const submit = async (data: any) => {
+    const formData = new FormData();
+    Object.keys(data).forEach((key: string) => {
+      formData.append(key, key === "avatar" ? data[key][0] : data[key]);
+    });
     try {
       const response = await axios.patch(
         `${import.meta.env.VITE_BASE_URL}/api/v1/users/update-details`,
-        data,
-        { withCredentials: true }
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          withCredentials: true,
+        }
       );
       if (response.status === 200) {
         dispatch(Update(response.data.data));
@@ -81,6 +90,15 @@ export function UpdateDetailsForm({
                   defaultValue={user?.email}
                   disabled={user?.source === "google"}
                   {...register("email")}
+                />
+              </div>
+              <div className="grid gap-3">
+                <Label htmlFor="avatar">Avatar</Label>
+                <input
+                  id="avatar"
+                  type="file"
+                  className="file-input file-input-ghost"
+                  {...register("avatar")}
                 />
               </div>
               <div className="flex flex-col gap-3">

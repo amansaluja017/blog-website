@@ -8,6 +8,7 @@ import mongoose, { ObjectId } from "mongoose";
 import crypto from "crypto";
 import nodemailer from "nodemailer"
 import { mailOptions } from "../../nodemailer/nodemailerConfig";
+import { uploadImage } from "../utils/Cloudinary";
 
 interface userTypes {
     firstName: string;
@@ -163,7 +164,13 @@ export const logout = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const updateDetails = asyncHandler(async (req: Request, res: Response) => {
-    const { firstName, lastName, email, avatar } = req.body;
+    const { firstName, lastName, email } = req.body;
+
+
+    const files = req.files as { [key: string]: { path: string }[] };
+    const avatarImagePath = files.avatar[0].path;
+
+    const avatar = await uploadImage(avatarImagePath);
 
     const user = await User.findOneAndUpdate({ _id: req.user?._id }, { firstName, lastName, email, avatar }, { new: true });
 
@@ -235,7 +242,7 @@ export const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
         throw new ApiError(500, "internal error: Failed to gernate otp");
     }
 
-    mailOptions(email, "YourBlogs", `your otp for email varification is ${otp}`);
+    mailOptions(process.env.NODEMAILER_USER!, email, "YourBlogs", `your otp for email varification is ${otp}`);
 
     return res.status(200).json(new ApiResponse(200, otp, "success"));
 });
@@ -275,7 +282,30 @@ export const checkUser = asyncHandler(async(req: Request, res: Response) => {
         throw new ApiError(500, "internal error: Failed to generate otp");
     }
 
-    mailOptions(email, "Forgot Password", `your otp for forgot password is ${otp}`);
+    mailOptions(process.env.NODEMAILER_USER!, email, "Forgot Password", `your otp for forgot password is ${otp}`);
 
     return res.status(200).json(new ApiResponse(200, {user, otp}, "User found successfully"));
+});
+
+export const createPassword = asyncHandler(async (req: Request, res: Response) => {
+    const { password, confirmPassword, email } = req.body;
+    console.log(password, confirmPassword, email)
+
+    if (!password || !confirmPassword) {
+        throw new ApiError(400, "All fields are required");
+    }
+
+    const user = await User.findOne({email});
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    if (password !== confirmPassword) {
+        throw new ApiError(400, "Passwords do not match");
+    }
+
+    user.password = confirmPassword;
+    await user.save();
+
+    return res.status(200).json(new ApiResponse(200, user, "Password updated successfully"));
 });

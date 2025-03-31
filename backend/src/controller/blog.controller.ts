@@ -50,7 +50,7 @@ export const blogPost = asyncHandler(async (req: Request, res: Response) => {
 
 export const getAllBlogs = asyncHandler(async (req: Request, res: Response) => {
 
-    const blogs = await Blog.find().sort({ createdAt: -1 });
+    const blogs = await Blog.find().sort({ createdAt: -1 }).populate("author");
 
     if (blogs.length < 1) {
         return res.status(200).json(new ApiResponse(404, "Blog not found"));

@@ -8,9 +8,9 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-export function mailOptions(to: string, subject: string, body: string) {
+export function mailOptions(from: string, to: string, subject: string, body: string) {
     const mailOptions = {
-        from: process.env.NODEMAILER_USER!,
+        from,
         to,
         subject,
         body

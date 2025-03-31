@@ -12,7 +12,7 @@ dotenv.config();
 
 
 app.use(cors({
-    origin: process.env.CORS_ORIGIN || "https://localhost:5173",
+    origin: [process.env.CORS_ORIGIN! , "https://1rt9brcw-5173.inc1.devtunnels.ms/"],
     credentials: true,
 }));
 app.use(express.static(path.join(__dirname, '../public')));
