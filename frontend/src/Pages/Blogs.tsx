@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { TypedUseSelectorHook, useSelector } from "react-redux";
 import { RootState } from "@/store/confStore";
+import { Heart } from "lucide-react";
 
 interface blogObject {
   _id: string;
@@ -24,10 +25,38 @@ function Blogs() {
   const [searchTerm, setSearchTerm] = useState("");
   const [value, setValue] = useState(blogs);
   const [loading, setLoading] = useState(true);
+  const [likedBlogs, setLikedBlogs] = useState<Set<string>>(
+    new Set(JSON.parse(localStorage.getItem("likedBlogs") || "[]"))
+  );
   const searchRef = useRef(null);
   const navigate = useNavigate();
   const useTypedSelector: TypedUseSelectorHook<RootState> = useSelector;
   const status: boolean = useTypedSelector((state) => state.user.status);
+
+  const heartToogle = async (blogId: string) => {
+    setLikedBlogs((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(blogId)) {
+        newSet.delete(blogId);
+      } else {
+        newSet.add(blogId);
+      }
+      localStorage.setItem("likedBlogs", JSON.stringify(Array.from(newSet)));
+      return newSet;
+    });
+
+    const response = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/api/v1/blogs/like-blog/${blogId}`,
+      {},
+      { withCredentials: true }
+    );
+    console.log(response);
+
+    await axios.get(
+      `${import.meta.env.VITE_BASE_URL}/api/v1/blogs/get-likes/${blogId}`,
+      { withCredentials: true }
+    );
+  };
 
   useEffect(() => {
     const fetchBlogs = async () => {
@@ -54,12 +83,15 @@ function Blogs() {
   }, [status]);
 
   useEffect(() => {
-    const filterBlogs = blogs.filter((blog) => {
-      return Object.values(blog)
-        .join("")
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
-    });
+    const filterBlogs =
+      blogs.length > 0
+        ? blogs.filter((blog) => {
+            return Object.values(blog)
+              .join("")
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase());
+          })
+        : [];
 
     if (searchTerm.length < 1) {
       setValue(blogs);
@@ -113,21 +145,13 @@ function Blogs() {
                   <h2 className="card-title text-lg sm:text-xl line-clamp-2 text-white">
                     {blog.title}
                   </h2>
-                  <button className="btn btn-square">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth="2.5"
-                      stroke="currentColor"
-                      className="size-[1.2em]">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
-                      />
-                    </svg>
-                  </button>
+                  <Heart
+                    onClick={() => {
+                      heartToogle(blog._id);
+                    }}
+                    fill={likedBlogs.has(blog._id) ? "red" : "none"}
+                    className="text-white cursor-pointer"
+                  />
                 </div>
                 <p className="text-xs line-clamp-3 text-gray-400">
                   {blog.description}
@@ -139,9 +163,31 @@ function Blogs() {
                     </h3>
                     <div className="card-actions justify-end">
                       <button
-                        onClick={() =>
-                          navigate("/content", { state: { blog } })
-                        }
+                        onClick={() => {
+                          navigate("/content", { state: { blog } });
+
+                          setTimeout(async () => {
+                            console.log("view complete")
+                            try {
+                              await axios.post(
+                                `${
+                                  import.meta.env.VITE_BASE_URL
+                                }/api/v1/blogs/blog-seen/${blog._id}`,
+                                {},
+                                { withCredentials: true }
+                              );
+
+                              await axios.get(
+                                `${
+                                  import.meta.env.VITE_BASE_URL
+                                }/api/v1/blogs/get-views/${blog._id}`,
+                                { withCredentials: true }
+                              );
+                            } catch (error) {
+                              console.error(error);
+                            }
+                          }, 10000);
+                        }}
                         className="btn btn-primary btn-sm sm:btn-md">
                         Read
                       </button>

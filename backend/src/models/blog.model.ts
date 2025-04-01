@@ -24,8 +24,23 @@ const blogSchema = new Schema(
         coverImage: {
             type: String,
         },
-        
-    }, {timestamps: true}
+        likes: {
+            type: Number,
+            default: 0
+        },
+        likedBy: {
+            type: [mongoose.Schema.Types.ObjectId],
+            ref: "User"
+        },
+        views: {
+            type: Number,
+            default: 0
+        },
+        seenBy: {
+            type: [mongoose.Schema.Types.ObjectId],
+            ref: "User"
+        }
+    }, { timestamps: true }
 );
 
 export const Blog = mongoose.model("Blog", blogSchema);

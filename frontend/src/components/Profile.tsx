@@ -129,7 +129,7 @@ function Profile() {
                   ) : (
                     <span
                       onClick={() => emailVarification()}
-                      className="text-blue-500 hover:underline text-sm cursor-pointer relative left-3">
+                      className="text-sm cursor-pointer relative left-3 px-3 badge badge-soft badge-primary">
                       verify
                     </span>
                   )}

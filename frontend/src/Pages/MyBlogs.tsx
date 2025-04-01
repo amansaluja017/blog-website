@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { TypedUseSelectorHook, useSelector } from "react-redux";
 import { RootState } from "@/store/confStore";
 import { Pencil, Trash } from "lucide-react";
+import StatsHeader from "@/components/StatsHeader";
 
 export interface blogObject {
   _id: string;
@@ -18,6 +19,8 @@ export interface blogObject {
 function MyBlogs() {
   const [blogs, setBlogs] = useState<blogObject[]>([]);
   const [loading, setLoading] = useState(true);
+  const [totalLikes, setTotalLikes] = useState<number>(0);
+  const [totalViews, setTotalViews] = useState<number>(0);
   const navigate = useNavigate();
   const useTypedSelector: TypedUseSelectorHook<RootState> = useSelector;
   const status: boolean = useTypedSelector((state) => state.user.status);
@@ -32,7 +35,9 @@ function MyBlogs() {
         );
 
         if (response.status === 200 && response.data.status === 200) {
-          setBlogs(response.data.data);
+          setTotalLikes(response.data.data.totalLikes);
+          setTotalViews(response.data.data.totalViews);
+          setBlogs(response.data.data.blogs);
         }
       } catch (error) {
         console.error(error);
@@ -48,6 +53,13 @@ function MyBlogs() {
 
   return (
     <div className="min-h-screen bg-base-200">
+      <div>
+        <StatsHeader
+          totalLikes={totalLikes}
+          blogs={blogs}
+          totalViews={totalViews}
+        />
+      </div>
       <div className="flex justify-end p-4 sm:p-6">
         <button
           onClick={() => navigate("/editor")}
@@ -108,7 +120,31 @@ function MyBlogs() {
                       />
                     </div>
                     <button
-                      onClick={() => navigate(`/blog/${blog._id}`)}
+                      onClick={() => {
+                        navigate("/content", { state: { blog } });
+
+                        setTimeout(async () => {
+                          console.log("view complete");
+                          try {
+                            await axios.post(
+                              `${
+                                import.meta.env.VITE_BASE_URL
+                              }/api/v1/blogs/blog-seen/${blog._id}`,
+                              {},
+                              { withCredentials: true }
+                            );
+
+                            await axios.get(
+                              `${
+                                import.meta.env.VITE_BASE_URL
+                              }/api/v1/blogs/get-views/${blog._id}`,
+                              { withCredentials: true }
+                            );
+                          } catch (error) {
+                            console.error(error);
+                          }
+                        }, 10000);
+                      }}
                       className="btn btn-primary btn-sm">
                       Read
                     </button>
