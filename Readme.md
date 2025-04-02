@@ -1,74 +1,71 @@
-# Modern Blog Application
+# Modern Blog Website
 
-A full-stack blog application built with React, TypeScript, Express, and MongoDB. Features user authentication, blog post creation/management, and a modern UI using Tailwind CSS.
+A full-stack modern blog platform built with React, TypeScript, and Node.js. Features a rich text editor, authentication, and responsive design.
 
-## Features
+## Key Features
 
-- 🔐 User Authentication (Local & Google OAuth)
-- 📝 Create, Read, Update, Delete Blog Posts
-- 🖼️ Image Upload Support
-- 💅 Modern UI with Tailwind CSS & DaisyUI
-- 🔍 Search Functionality
-- 📱 Responsive Design
+- 🎨 Rich Text Editor with TipTap
+- 🔒 Multi-mode Authentication (Email & Google OAuth)
+- 📱 Responsive Design with Tailwind CSS & DaisyUI
+- 🌓 Dark/Light Theme Support
+- 🖼️ Image Upload with Cloudinary
+- 🔑 Password Recovery System
+- 👤 User Profile Management
+- ✍️ Blog Management (CRUD Operations)
+- 🎯 Protected Routes
+- 🔍 Content Search
 
-## Tech Stack
+## Technology Stack
 
 ### Frontend
-- React with TypeScript
-- Redux Toolkit for State Management
-- TailwindCSS & DaisyUI for Styling
-- Google OAuth Integration
-- Vite as Build Tool
+- React 19 with TypeScript
+- Vite for build tooling
+- Redux Toolkit for state management
+- TipTap for rich text editing
+- Tailwind CSS & DaisyUI for styling
+- React Router v7 for routing
+- Axios for API calls
+- Google OAuth integration
 
 ### Backend
 - Node.js with Express
 - TypeScript
 - MongoDB with Mongoose
-- JWT Authentication
-- Cloudinary for Image Storage
-- Multer for File Handling
+- JWT for authentication
+- Cloudinary for media storage
+- Nodemailer for emails
+- bcrypt for password hashing
 
 ## Project Structure
 
 ```
 blog-website/
-├── frontend/             # React frontend application
+├── frontend/
 │   ├── src/
-│   │   ├── components/   # Reusable UI components
-│   │   ├── Pages/       # Page components
-│   │   ├── store/       # Redux store configuration
-│   │   └── utils/       # Utility functions
-│   └── ...
-└── backend/             # Express backend application
+│   │   ├── components/    # Reusable UI components
+│   │   ├── Pages/        # Page components
+│   │   ├── store/        # Redux store
+│   │   └── main.tsx      # App entry point
+│   ├── public/           # Static assets
+│   └── index.html        # HTML template
+└── backend/
     ├── src/
-    │   ├── controllers/ # Request handlers
-    │   ├── models/      # Database models
-    │   ├── routes/      # API routes
-    │   ├── utils/       # Utility functions
-    │   └── middlewares/ # Custom middlewares
-    └── ...
+    │   ├── controllers/  # Request handlers
+    │   ├── models/       # Database schemas
+    │   ├── routes/       # API routes
+    │   └── utils/        # Helper functions
+    └── index.ts          # Server entry point
 ```
 
-## Getting Started
+## Setup Instructions
 
-1. Clone the repository:
+1. **Clone Repository**
 ```bash
 git clone https://github.com/amansaluja017/blog-website.git
 cd blog-website
 ```
 
-2. Install dependencies:
-```bash
-# Frontend
-cd frontend
-npm install
-
-# Backend
-cd ../backend
-npm install
-```
-
-3. Set up environment variables:
+2. **Environment Variables**
 
 Frontend (.env):
 ```
@@ -79,65 +76,85 @@ VITE_GOOGLE_CLIENT_ID=your_google_client_id
 Backend (.env):
 ```
 PORT=8000
-MONGO_URI=your_mongodb_uri
-SECRET=your_jwt_secret
-CLOUD_NAME=your_cloudinary_cloud_name
-CLOUDINARY_API_KEY=your_cloudinary_api_key
-CLOUDINARY_SECRET_API_KEY=your_cloudinary_secret_key
+MONGODB_URI=your_mongodb_uri
+JWT_SECRET=your_jwt_secret
+CLOUDINARY_NAME=your_cloudinary_name
+CLOUDINARY_API_KEY=your_cloudinary_key
+CLOUDINARY_API_SECRET=your_cloudinary_secret
+SMTP_HOST=your_smtp_host
+SMTP_PORT=your_smtp_port
+SMTP_USER=your_smtp_user
+SMTP_PASS=your_smtp_password
 ```
 
-4. Run the application:
+3. **Install Dependencies & Run**
 
 ```bash
-# Frontend
+# Frontend Setup
 cd frontend
+npm install
 npm run dev
 
-# Backend
-cd backend
+# Backend Setup
+cd ../backend
+npm install
 npm run dev
 ```
+
+## API Documentation
+
+### Authentication Endpoints
+- `POST /api/v1/users/register` - User registration
+- `POST /api/v1/users/login` - Email login
+- `POST /api/v1/users/google-login` - Google OAuth login
+- `POST /api/v1/users/forgot-password` - Password recovery
+- `POST /api/v1/users/reset-password` - Reset password
+- `GET /api/v1/users/profile` - Get user profile
+- `PATCH /api/v1/users/profile` - Update profile
+
+### Blog Endpoints
+- `GET /api/v1/blogs` - List all blogs
+- `GET /api/v1/blogs/:id` - Get single blog
+- `POST /api/v1/blogs` - Create blog
+- `PUT /api/v1/blogs/:id` - Update blog
+- `DELETE /api/v1/blogs/:id` - Delete blog
+- `GET /api/v1/blogs/my-blogs` - User's blogs
 
 ## Features in Detail
 
-### Authentication
-- Local authentication with email and password
+### Rich Text Editor
+- TipTap integration
+- Multiple formatting options
+- Image embedding
+- Real-time preview
+
+### Authentication System
+- JWT-based authentication
 - Google OAuth integration
-- JWT-based session management
-- Password update functionality
+- Password recovery via email
+- Protected route middleware
 
-### Blog Management
-- Create new blog posts with rich text editor
-- Upload cover images for blogs
-- Edit existing blog posts
-- Delete blog posts
-- View all blogs and personal blogs
-- Search blogs by title/content
+### User Management
+- Profile customization
+- Password management
+- Blog management
+- Activity tracking
 
-### User Profile
-- Update user details
-- Change password
-- View personal blog posts
-- Google-authenticated users can set password
+### Blog Features
+- Create/Edit/Delete posts
+- Rich text content
+- Cover image upload
+- Author attribution
+- Search functionality
 
-## API Endpoints
+## Contribution
 
-### User Routes
-- `POST /api/v1/users/register` - Register new user
-- `POST /api/v1/users/login` - Login user
-- `POST /api/v1/users/googleLogin` - Google OAuth login
-- `POST /api/v1/users/logout` - Logout user
-- `PATCH /api/v1/users/update-details` - Update user details
-- `PATCH /api/v1/users/update-password` - Update password
-- `PATCH /api/v1/users/set-password` - Set password (Google users)
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open Pull Request
 
-### Blog Routes
-- `POST /api/v1/blogs/post` - Create new blog
-- `GET /api/v1/blogs/getBlogs` - Get all blogs
-- `GET /api/v1/blogs/getMyBlogs` - Get user's blogs
-- `PATCH /api/v1/blogs/update-blog/:blogId` - Update blog
-- `DELETE /api/v1/blogs/delete-blog/:blogId` - Delete blog
+## License
 
-## Contributing
-
-Feel free to open issues and pull requests for any improvements.
+This project is licensed under the MIT License
