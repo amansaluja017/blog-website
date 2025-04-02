@@ -42,5 +42,4 @@ router.route("/check-user").post(checkUser);
 router.route("/create-password").patch(createPassword);
 router.route("/followers/:userId").post(verifyJWT, followers);
 
-
 export default router;

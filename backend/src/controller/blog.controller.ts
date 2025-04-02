@@ -62,14 +62,20 @@ export const getAllBlogs = asyncHandler(async (req: Request, res: Response) => {
   const blogs = await Blog.find().sort({ createdAt: -1 }).populate("author");
 
   const likedBy = blogs.map((blog) => {
-    if ((blog.likedBy as mongoose.Types.ObjectId[]).includes(req.user?._id as mongoose.Types.ObjectId)) {
+    if (
+      (blog.likedBy as mongoose.Types.ObjectId[]).includes(
+        req.user?._id as mongoose.Types.ObjectId
+      )
+    ) {
       return blog._id;
     }
   });
 
   return res
     .status(200)
-    .json(new ApiResponse(200, {blogs, likedBy}, "Blogs fetched successfully"));
+    .json(
+      new ApiResponse(200, { blogs, likedBy }, "Blogs fetched successfully")
+    );
 });
 
 export const myBlogs = asyncHandler(async (req: Request, res: Response) => {

@@ -398,40 +398,72 @@ export const followers = asyncHandler(async (req: Request, res: Response) => {
   const loginUserFollowing = loginUser.following;
 
   if (loginUserFollowing?.includes(userId)) {
-    const unfollowUser = await User.findByIdAndUpdate(req.user?._id, {
-      $pull: { following: userId }
-    }, { new: true });
+    const unfollowUser = await User.findByIdAndUpdate(
+      req.user?._id,
+      {
+        $pull: { following: userId },
+      },
+      { new: true }
+    );
 
     if (!unfollowUser) {
       throw new ApiError(500, "Failed to unfollow user");
     }
 
-    const unfollowedUser = await User.findByIdAndUpdate(userId, {
-      $pull: { followers: req.user?._id }
-    }, { new: true });
+    const unfollowedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        $pull: { followers: req.user?._id },
+      },
+      { new: true }
+    );
 
     if (!unfollowedUser) {
       throw new ApiError(500, "Failed to remove follower");
     }
 
-    return res.status(200).json(new ApiResponse(200, { unfollowUser, unfollowedUser }, "follower unfollowed successfully"));
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          { unfollowUser, unfollowedUser },
+          "follower unfollowed successfully"
+        )
+      );
   } else {
-    const followUser = await User.findByIdAndUpdate(req.user?._id, {
-      $push: { following: userId }
-    }, { new: true });
+    const followUser = await User.findByIdAndUpdate(
+      req.user?._id,
+      {
+        $push: { following: userId },
+      },
+      { new: true }
+    );
 
     if (!followUser) {
       throw new ApiError(500, "Failed to follow user");
     }
 
-    const followedUser = await User.findByIdAndUpdate(userId, {
-      $push: { followers: req.user?._id }
-    }, { new: true });
+    const followedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        $push: { followers: req.user?._id },
+      },
+      { new: true }
+    );
 
     if (!followedUser) {
       throw new ApiError(500, "Failed to add follower");
     }
 
-    return res.status(200).json(new ApiResponse(200, { followUser, followedUser }, "follower followed successfully"));
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          { followUser, followedUser },
+          "follower followed successfully"
+        )
+      );
   }
 });
