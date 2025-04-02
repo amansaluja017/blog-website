@@ -3,7 +3,6 @@ import {
   SheetContent,
   SheetDescription,
   SheetHeader,
-  SheetOverlay,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
@@ -19,6 +18,8 @@ import { OtpSection } from "./OtpSection";
 import { BadgeCheck } from "lucide-react";
 
 function Profile() {
+  const [followers, setFollowers] = useState(null);
+  const [following, setFollowing] = useState(null);
   const useTypedSelector: TypedUseSelectorHook<RootState> = useSelector;
   const status: boolean = useTypedSelector((state) => state.user.status);
   const user = useTypedSelector((state) => state.user.userData);
@@ -34,10 +35,15 @@ function Profile() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        await axios.get(
+        const response = await axios.get(
           `${import.meta.env.VITE_BASE_URL}/api/v1/users/getCurrentUser`,
           { withCredentials: true }
         );
+        if (response.status === 200) {
+          setFollowers(response.data.data.followers.length);
+          setFollowing(response.data.data.following.length);
+          localStorage.setItem("following", JSON.stringify(response.data.data.following));
+        }
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
@@ -57,6 +63,7 @@ function Profile() {
       dispatch(logout());
       navigate("/");
       googleLogout();
+      localStorage.clear();
     }
   };
 
@@ -88,7 +95,7 @@ function Profile() {
     <div>
       <Sheet>
         <SheetTrigger>
-            <Avatar className="cursor-pointer ring-2 ring-offset-2 ring-primary">
+          <Avatar className="cursor-pointer ring-2 ring-offset-2 ring-primary">
             <AvatarImage
               src={user?.avatar || "/avatar.jpg"}
               alt={`${user?.firstName || "User"} ${user?.lastName || ""}`}
@@ -97,12 +104,13 @@ function Profile() {
             <AvatarFallback className="bg-gray-500 text-white font-bold">
               {`${user?.firstName?.[0] || ""}${user?.lastName?.[0] || ""}`}
             </AvatarFallback>
-            </Avatar>
+          </Avatar>
         </SheetTrigger>
         <SheetContent className="bg-[#1D232A] p-6 rounded-lg">
           <div
             ref={otpRef}
-            className="z-50 absolute h-screen w-full items-center justify-center backdrop-blur-sm text-white hidden">
+            className="z-50 absolute h-screen w-full items-center justify-center backdrop-blur-sm text-white hidden"
+          >
             <OtpSection otp={otp} otpRef={otpRef} />
           </div>
           <SheetHeader>
@@ -129,10 +137,19 @@ function Profile() {
                   ) : (
                     <span
                       onClick={() => emailVarification()}
-                      className="text-sm cursor-pointer relative left-3 px-3 badge badge-soft badge-primary">
+                      className="text-sm cursor-pointer relative left-3 px-3 badge badge-soft badge-primary"
+                    >
                       verify
                     </span>
                   )}
+                </div>
+              </div>
+              <div className="text-white flex items-center justify-around mt-5 w-full">
+                <div>
+                  <span className="font-semibold">Followers</span> {followers}
+                </div>
+                <div>
+                  <span className="font-semibold">Following</span> {following}
                 </div>
               </div>
             </div>
@@ -143,7 +160,8 @@ function Profile() {
             onClick={() => {
               navigate("/my-blogs");
             }}
-            className="w-full cursor-pointer p-4 hover:bg-primary rounded-lg">
+            className="w-full cursor-pointer p-4 hover:bg-primary rounded-lg"
+          >
             <div className="text-white font-semibold">My blogs</div>
           </div>
           <hr />
@@ -151,7 +169,8 @@ function Profile() {
             onClick={() => {
               navigate("/update-details");
             }}
-            className="w-full cursor-pointer p-4 hover:bg-primary rounded-lg">
+            className="w-full cursor-pointer p-4 hover:bg-primary rounded-lg"
+          >
             <div className="text-white font-semibold">Update details</div>
           </div>
           <hr />
@@ -160,7 +179,8 @@ function Profile() {
               onClick={() => {
                 navigate("/set-password");
               }}
-              className="w-full cursor-pointer p-4 hover:bg-primary rounded-lg">
+              className="w-full cursor-pointer p-4 hover:bg-primary rounded-lg"
+            >
               <div className="text-white font-semibold">Set password</div>
             </div>
           ) : (
@@ -168,7 +188,8 @@ function Profile() {
               onClick={() => {
                 navigate("/update-password");
               }}
-              className="w-full cursor-pointer p-4 hover:bg-primary rounded-lg">
+              className="w-full cursor-pointer p-4 hover:bg-primary rounded-lg"
+            >
               <div className="text-white font-semibold">Change password</div>
             </div>
           )}
@@ -176,7 +197,8 @@ function Profile() {
 
           <button
             onClick={() => handleLogout()}
-            className="btn btn-soft btn-error text-sm sm:text-base mt-5">
+            className="btn btn-soft btn-error text-sm sm:text-base mt-5"
+          >
             Logout
           </button>
         </SheetContent>

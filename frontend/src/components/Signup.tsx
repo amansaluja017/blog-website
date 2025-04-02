@@ -122,7 +122,7 @@ useEffect(() => {
               <Button ref={btnRef} type="submit" className="w-full cursor-pointer disabled:bg-[#242527]">
                 Signup
               </Button>
-              <hr />
+              <div className="divider">OR</div>
               <GoogleLoginButton />
             </div>
             <div

@@ -1,9 +1,15 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { TypedUseSelectorHook, useSelector } from "react-redux";
 import { RootState } from "@/store/confStore";
 import { Heart } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface blogObject {
   _id: string;
@@ -17,6 +23,7 @@ interface blogObject {
     firstName: string;
     lastName: string;
     email: string;
+    avatar: string;
   };
   coverImage: string;
 }
@@ -27,6 +34,9 @@ function Blogs() {
   const [loading, setLoading] = useState(true);
   const [likedBlogs, setLikedBlogs] = useState<Set<string>>(
     new Set(JSON.parse(localStorage.getItem("likedBlogs") || "[]"))
+  );
+  const [following, setFollowing] = useState<Set<string>>(
+    new Set(JSON.parse(localStorage.getItem("following") || "[]"))
   );
   const searchRef = useRef(null);
   const navigate = useNavigate();
@@ -45,18 +55,42 @@ function Blogs() {
       return newSet;
     });
 
-    const response = await axios.post(
+    await axios.post(
       `${import.meta.env.VITE_BASE_URL}/api/v1/blogs/like-blog/${blogId}`,
       {},
       { withCredentials: true }
     );
-    console.log(response);
 
     await axios.get(
       `${import.meta.env.VITE_BASE_URL}/api/v1/blogs/get-likes/${blogId}`,
       { withCredentials: true }
     );
   };
+
+  useEffect(() => {
+    const likedBlogs = JSON.parse(localStorage.getItem("likedBlogs") || "[]");
+
+    setLikedBlogs(new Set(likedBlogs));
+  }, []);
+
+  const toogleFollowBtn = async (userId: string) => {
+    setFollowing((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(userId)) {
+        newSet.delete(userId);
+      } else {
+        newSet.add(userId);
+      }
+      localStorage.setItem("following", JSON.stringify(Array.from(newSet)));
+      return newSet;
+    });
+
+    await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/api/v1/users/followers/${userId}`,
+      {},
+      { withCredentials: true }
+    );
+  }
 
   useEffect(() => {
     const fetchBlogs = async () => {
@@ -68,7 +102,8 @@ function Blogs() {
         );
 
         if (response.status === 200) {
-          setBlogs(response.data.data);
+          setBlogs(response.data.data.blogs);
+          localStorage.setItem("likedBlogs", JSON.stringify(response.data.data.likedBy || []));
         }
       } catch (error) {
         console.error(error);
@@ -120,7 +155,8 @@ function Blogs() {
         </div>
         <button
           onClick={() => navigate("/editor")}
-          className="btn btn-accent w-full sm:w-auto">
+          className="btn btn-accent w-full sm:w-auto"
+        >
           Create Blog
         </button>
       </div>
@@ -132,7 +168,8 @@ function Blogs() {
           value.map((blog, i) => (
             <div
               key={i}
-              className="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow">
+              className="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow"
+            >
               <figure className="h-48 w-full">
                 <img
                   src={blog.coverImage || "/default-cover.jpg"}
@@ -158,16 +195,59 @@ function Blogs() {
                 </p>
                 <div>
                   <div className="flex items-center h-full justify-between">
-                    <h3 className="text-gray-500 text-xs italic">
-                      ~ {`${blog.author?.firstName} ${blog.author?.lastName}`}
-                    </h3>
+                    <Popover>
+                      <PopoverContent className="bg-base-200 border-base-200">
+                        <div className="flex items-center text-white text-xs gap-x-5">
+                          <div>
+                            <Avatar>
+                              <AvatarImage
+                                src={blog.author?.avatar || "/avatar.jpg"}
+                                alt={`${blog.author?.firstName || "User"} ${blog.author?.lastName || ""}`}
+                                className="object-cover"
+                              />
+                              <AvatarFallback className="bg-gray-500 text-white font-bold">
+                                {`${blog.author?.firstName?.[0] || ""}${blog.author?.lastName?.[0] || ""}`}
+                              </AvatarFallback>
+                            </Avatar>
+                          </div>
+                          <div className="w-full">
+                            <div className="flex items-center justify-between w-full">
+                              <h4>
+                                {blog.author?.firstName} {blog.author?.lastName}
+                              </h4>
+                              <input
+                                onChange={() => toogleFollowBtn(blog.author._id)}
+                                checked={new Set(JSON.parse(localStorage.getItem("following") || "[]")).has(blog.author?._id) ? false : true}
+                                type="checkbox"
+                                aria-label="follow"
+                                className="btn w-18 h-8 bg-blend-soft-light rounded-full"
+                              />
+                            </div>
+                            <h4 className="text-gray-500">
+                              {blog.author?.email}
+                            </h4>
+                          </div>
+                        </div>
+                      </PopoverContent>
+                      <PopoverTrigger>
+                        <Avatar>
+                          <AvatarImage
+                            src={blog.author?.avatar || "/avatar.jpg"}
+                            alt={`${blog.author?.firstName || "User"} ${blog.author?.lastName || ""}`}
+                            className="object-cover"
+                          />
+                          <AvatarFallback className="bg-gray-500 text-white font-bold">
+                            {`${blog.author?.firstName?.[0] || ""}${blog.author?.lastName?.[0] || ""}`}
+                          </AvatarFallback>
+                        </Avatar>
+                      </PopoverTrigger>
+                    </Popover>
                     <div className="card-actions justify-end">
                       <button
                         onClick={() => {
                           navigate("/content", { state: { blog } });
 
                           setTimeout(async () => {
-                            console.log("view complete")
                             try {
                               await axios.post(
                                 `${
@@ -188,7 +268,8 @@ function Blogs() {
                             }
                           }, 10000);
                         }}
-                        className="btn btn-primary btn-sm sm:btn-md">
+                        className="btn btn-primary btn-sm sm:btn-md"
+                      >
                         Read
                       </button>
                     </div>

@@ -84,7 +84,7 @@ export function LoginForm({
                 <Button type="submit" className="w-full cursor-pointer">
                   Login
                 </Button>
-                <hr />
+                <div className="divider">OR</div>
                 <div className="mt-2">
                   <GoogleLoginButton />
                 </div>
