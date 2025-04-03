@@ -24,8 +24,10 @@ app.use(express.json({ limit: "40kb" }));
 
 import userRouter from "./routes/user.routes";
 import blogRouter from "./routes/blog.routes";
+import commentRouter from "./routes/comment.routes";
 
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/blogs", blogRouter);
+app.use("/api/v1/comments", commentRouter);
 
 export { app };
