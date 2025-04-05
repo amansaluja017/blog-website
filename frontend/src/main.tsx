@@ -18,6 +18,7 @@ import SignupPage from "./Pages/SignupPage";
 import { Provider } from "react-redux";
 import { store } from "./store/confStore";
 import UserProtected from "./components/UserProtected";
+import AdminProtected from "./components/AdminProtected";
 import UpdateDetails from "./Pages/UpdateDetails";
 import UpdatePassword from "./Pages/UpdatePassword";
 import MyBlogs from "./Pages/MyBlogs";
@@ -28,6 +29,8 @@ import CreatePassword from "./Pages/CreateNewPassword";
 import About from "./Pages/About";
 import ContactUs from "./Pages/ContactUs";
 import Content from "./Pages/Content";
+import Dashboard from "./Pages/Admin/Dashboard";
+import Users from "./Pages/Admin/Users";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -109,6 +112,22 @@ const router = createBrowserRouter(
           <UserProtected>
             <Content />
           </UserProtected>
+        }
+      />
+      <Route
+        path="/admin/dashboard"
+        element={
+          <AdminProtected>
+            <Dashboard />
+          </AdminProtected>
+        }
+      />
+      <Route
+        path="/admin/users"
+        element={
+          <AdminProtected>
+            <Users />
+          </AdminProtected>
         }
       />
     </Route>

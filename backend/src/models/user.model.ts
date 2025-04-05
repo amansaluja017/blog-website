@@ -24,6 +24,15 @@ const userSchema = new Schema(
     avatar: {
       type: String,
     },
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+    },
+    isBlocked: {
+      type: Boolean,
+      default: false,
+    },
     source: {
       type: String,
       enum: ["local", "google"],
@@ -79,6 +88,8 @@ export interface IUser extends mongoose.Document {
   email: string;
   password?: string;
   avatar?: string;
+  role: "user" | "admin";
+  isBlocked: boolean;
   source: "local" | "google";
   following?: Array<string>;
   followers?: Array<string>;
