@@ -28,7 +28,7 @@ export function LoginForm({
   const submit = async (data: any) => {
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/api/v1/users/login`,
+        `${import.meta.env.VITE_BASE_URL}/user/login`,
         data,
         { withCredentials: true }
       );

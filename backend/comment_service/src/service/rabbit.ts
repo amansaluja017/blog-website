@@ -19,7 +19,6 @@ async function subscribeToQueue(
   }
   await channel.assertQueue(queueName, { durable: true });
   channel.consume(queueName, (msg) => {
-    console.log(msg);
     if (msg !== null) {
       callback(msg.content.toString());
       channel!.ack(msg);

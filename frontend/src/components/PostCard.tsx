@@ -33,7 +33,7 @@ function PostCard(props: PostCardProps) {
     });
 
     const response = await axios.post(
-      `${import.meta.env.VITE_BASE_URL}/api/v1/blogs/post`,
+      `${import.meta.env.VITE_BASE_URL}/blog/post`,
       formData,
       {
         headers: {

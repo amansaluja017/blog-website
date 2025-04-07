@@ -41,7 +41,7 @@ useEffect(() => {
   const submit = async (data: object) => {
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/api/v1/users/register`,
+        `${import.meta.env.VITE_BASE_URL}/user/register`,
         data,
         { withCredentials: true }
       );

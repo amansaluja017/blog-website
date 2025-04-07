@@ -1,4 +1,4 @@
-import mongoose, { mongo } from "mongoose";
+import mongoose from "mongoose";
 
 const Schema = mongoose.Schema;
 
@@ -17,8 +17,7 @@ const blogSchema = new Schema(
       required: true,
     },
     author: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      type: Object,
       required: true,
     },
     coverImage: {
@@ -30,7 +29,6 @@ const blogSchema = new Schema(
     },
     likedBy: {
       type: [mongoose.Schema.Types.ObjectId],
-      ref: "User",
     },
     views: {
       type: Number,
@@ -38,13 +36,11 @@ const blogSchema = new Schema(
     },
     seenBy: {
       type: [mongoose.Schema.Types.ObjectId],
-      ref: "User",
     },
     comments: {
       type: [
         {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "Comment",
         },
       ],
       default: [],

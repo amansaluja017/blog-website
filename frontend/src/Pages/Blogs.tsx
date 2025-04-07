@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { TypedUseSelectorHook, useSelector } from "react-redux";
@@ -86,7 +86,7 @@ function Blogs() {
     });
 
     await axios.post(
-      `${import.meta.env.VITE_BASE_URL}/api/v1/users/followers/${userId}`,
+      `${import.meta.env.VITE_BASE_URL}/user/followers/${userId}`,
       {},
       { withCredentials: true }
     );
@@ -97,11 +97,12 @@ function Blogs() {
       setLoading(true);
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_BASE_URL}/api/v1/blogs/getBlogs`,
+          `${import.meta.env.VITE_BASE_URL}/blog/getBlogs`,
           { withCredentials: true }
         );
 
         if (response.status === 200) {
+          console.log(response)
           setBlogs(response.data.data.blogs);
           localStorage.setItem("likedBlogs", JSON.stringify(response.data.data.likedBy || []));
         }

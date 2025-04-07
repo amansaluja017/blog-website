@@ -36,7 +36,7 @@ function Profile() {
     const fetchUser = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_BASE_URL}/api/v1/users/getCurrentUser`,
+          `${import.meta.env.VITE_BASE_URL}/user/getCurrentUser`,
           { withCredentials: true }
         );
         if (response.status === 200) {

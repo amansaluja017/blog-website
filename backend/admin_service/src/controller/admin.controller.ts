@@ -3,23 +3,43 @@ import { asyncHandler } from "../utils/asyncHandler";
 import { ApiError } from "../utils/ApiError";
 import { ApiResponse } from "../utils/ApiResponse";
 import { Admin } from "../models/admin.model";
+import { publishToQueue, subscribeToQueue } from "../service/rabbit";
 
 export const getDashboardStats = asyncHandler(
   async (req: Request, res: Response) => {
-    const totalUsers = await Admin.countDocuments({ role: "user" });
-    const totalBlogs = await Blog.countDocuments();
-    const totalComments = await Comment.countDocuments();
+    let totalUsers = 0;
+    let totalBlogs = 0;
+    let recentBlogs: Array<{ title: string; description: string; createdAt: string; views: number; likes: number; author: { firstName: string; lastName: string; email: string } }> = [];
+    interface RecentUser {
+      firstName: string;
+      lastName: string;
+      email: string;
+      createdAt: string;
+    }
 
-    const recentUsers = await Admin.find({ role: "user" })
-      .sort({ createdAt: -1 })
-      .limit(5)
-      .select("firstName lastName email avatar createdAt");
+    let recentUsers: RecentUser[] = [];
+    let totalComments = 0;
 
-    const recentBlogs = await Blog.find()
-      .sort({ createdAt: -1 })
-      .limit(5)
-      .populate("author", "firstName lastName email")
-      .select("title description createdAt views likes");
+
+    subscribeToQueue("userCount", (data) => {
+      totalUsers = JSON.parse(data);
+    });
+
+    subscribeToQueue("blogCount", (data) => {
+      totalBlogs = JSON.parse(data);
+    })
+
+    subscribeToQueue("totalComments", (data) => {
+      totalComments = JSON.parse(data);
+    })
+
+    subscribeToQueue("recentBlogs", (data) => {
+      recentBlogs = JSON.parse(data);
+    });
+
+    subscribeToQueue("recentUsers", (data) => {
+      recentUsers = JSON.parse(data);
+    })
 
     return res.status(200).json(
       new ApiResponse(

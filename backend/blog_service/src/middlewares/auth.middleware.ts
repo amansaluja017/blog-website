@@ -29,15 +29,12 @@ declare global {
   }
 }
 
-interface DecodedToken extends jwt.JwtPayload {
-  id: string;
-}
 
 export const verifyJWT = async (
   req: Request,
   res: Response,
   next: NextFunction
-): Promise<any> => {
+): Promise<void> => {
   try {
     const token: string | undefined =
       req.cookies?.accessToken ??

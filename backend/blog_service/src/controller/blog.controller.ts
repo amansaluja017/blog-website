@@ -30,12 +30,13 @@ export const blogPost = asyncHandler(async (req: Request, res: Response) => {
   if (!coverImage) {
     throw new ApiError(500, "Failed to upload cover image");
   }
+  console.log(req.user)
 
   const blog = await Blog.create({
     title,
     description,
     content,
-    author: req.user?._id,
+    author: req.user,
     coverImage,
   });
 

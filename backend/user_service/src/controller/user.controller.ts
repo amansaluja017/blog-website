@@ -1,12 +1,11 @@
 import { Request, Response } from "express";
-import { IUser, User } from "../models/user.model";
+import { User } from "../models/user.model";
 import { ApiError } from "../utils/ApiError";
 import { ApiResponse } from "../utils/ApiResponse";
 import { asyncHandler } from "../utils/asyncHandler";
 import { OAuth2Client } from "google-auth-library";
 import mongoose, { ObjectId } from "mongoose";
 import crypto from "crypto";
-// import nodemailer from "nodemailer";
 import { mailOptions } from "../nodemailer/nodemailerConfig";
 import { uploadImage } from "../utils/Cloudinary";
 import { publishToQueue } from "../service/rabbit";
@@ -74,6 +73,10 @@ export const userRegister = asyncHandler(
       user._id as unknown as mongoose.Schema.Types.ObjectId
     );
 
+    const userCount = await User.countDocuments({role: "user"});
+
+    publishToQueue("userCount", JSON.stringify(userCount));
+
     return res
       .status(201)
       .cookie("accessToken", accessToken)
@@ -133,6 +136,10 @@ export const googleUser = asyncHandler(async (req: Request, res: Response) => {
   if (!user) {
     throw new ApiError(500, "Failed to register user");
   }
+
+  const userCount = await User.countDocuments({role: "user"});
+
+  publishToQueue("userCount", JSON.stringify(userCount));
 
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
     user._id as unknown as mongoose.Schema.Types.ObjectId

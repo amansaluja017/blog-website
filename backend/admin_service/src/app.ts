@@ -15,8 +15,8 @@ app.use(express.json({ limit: "40kb" }));
 
 connect();
 
-import userRoutes from "./routes/user.routes";
+import adminRoutes from "./routes/admin.routes";
 
-app.use("/", userRoutes);
+app.use("/", adminRoutes);
 
 export default app;
