@@ -10,19 +10,17 @@ const createAdminUser = async () => {
     await mongoose.connect(process.env.MONGO_URI!);
     console.log("Connected to MongoDB");
 
-    // Check if admin already exists
     const existingAdmin = await Admin.findOne({ email: "admin@yourblog.com" });
     if (existingAdmin) {
       console.log("Admin user already exists");
       process.exit(0);
     }
 
-    const hashedPassword = await bcrypt.hash("admin123", 10);
     const adminUser = await Admin.create({
       firstName: "Admin",
       lastName: "User",
       email: "admin@yourblog.com",
-      password: hashedPassword,
+      password: "admin@123",
       role: "admin",
       source: "local",
       email_verified: true,

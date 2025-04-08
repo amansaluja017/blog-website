@@ -10,7 +10,7 @@ async function connect() {
 async function subscribeToQueue(
   queueName: string,
   callback: (message: string) => void
-): Promise<void> {
+): Promise<() => void> {
   if (!channel) {
     await connect();
   }
@@ -24,6 +24,13 @@ async function subscribeToQueue(
       channel!.ack(msg);
     }
   });
+
+  return () => {
+    if (channel) {
+      channel.cancel(queueName);
+      channel.close();
+    }
+  }
 }
 
 async function publishToQueue(

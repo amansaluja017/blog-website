@@ -26,7 +26,7 @@ export function CreatePasswordForm({
   const submit = async (data: any) => {
     try {
       const response = await axios.patch(
-        `${import.meta.env.VITE_BASE_URL}/api/v1/users/create-password`,
+        `${import.meta.env.VITE_BASE_URL}/user/create-password`,
         {
           password: data.password,
           confirmPassword: data.confirmPassword,

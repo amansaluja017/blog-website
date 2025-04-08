@@ -3,6 +3,7 @@ import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { IUser, User } from "../models/user.model";
 import { ApiError } from "../utils/ApiError";
+import { publishToQueue, subscribeToQueue } from "../service/rabbit";
 
 declare global {
   namespace Express {
@@ -39,6 +40,17 @@ export const verifyJWT = async (
     if (!decoded || typeof decoded === "string" || !("id" in decoded)) {
       throw new ApiError(401, "unauthorized");
     }
+
+    publishToQueue("checkAdmin", JSON.stringify(decoded.id));
+
+    subscribeToQueue("adminVerified", (data) => {
+      if (data) {
+        const parsedData = JSON.parse(data);
+
+        req.user = parsedData;
+        next();
+      }
+    });
 
     const user: IUser | null = await User.findOne({
       _id: (decoded as DecodedToken).id,

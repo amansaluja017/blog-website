@@ -30,11 +30,11 @@ function MyBlogs() {
       setLoading(true);
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_BASE_URL}/api/v1/blogs/getMyBlogs`,
+          `${import.meta.env.VITE_BASE_URL}/blog/getMyBlogs`,
           { withCredentials: true }
         );
 
-        if (response.status === 200 && response.data.status === 200) {
+        if (response.status === 200) {
           setTotalLikes(response.data.data.totalLikes);
           setTotalViews(response.data.data.totalViews);
           setBlogs(response.data.data.blogs);
@@ -104,7 +104,7 @@ function MyBlogs() {
                             const response = await axios.delete(
                               `${
                                 import.meta.env.VITE_BASE_URL
-                              }/api/v1/blogs/delete-blog/${blog._id}`,
+                              }/blog/delete-blog/${blog._id}`,
                               { withCredentials: true }
                             );
                             if (response.status === 200) {
@@ -124,12 +124,11 @@ function MyBlogs() {
                         navigate("/content", { state: { blog } });
 
                         setTimeout(async () => {
-                          console.log("view complete");
                           try {
                             await axios.post(
                               `${
                                 import.meta.env.VITE_BASE_URL
-                              }/api/v1/blogs/blog-seen/${blog._id}`,
+                              }/blog/blog-seen/${blog._id}`,
                               {},
                               { withCredentials: true }
                             );
@@ -137,7 +136,7 @@ function MyBlogs() {
                             await axios.get(
                               `${
                                 import.meta.env.VITE_BASE_URL
-                              }/api/v1/blogs/get-views/${blog._id}`,
+                              }/blog/get-views/${blog._id}`,
                               { withCredentials: true }
                             );
                           } catch (error) {

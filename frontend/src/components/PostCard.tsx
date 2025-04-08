@@ -42,8 +42,9 @@ function PostCard(props: PostCardProps) {
         withCredentials: true,
       }
     );
-    if(response.status === 201 ) {
-      navigate('/blogs')
+    console.log(response);
+    if (response.status === 201) {
+      navigate("/blogs");
     }
   };
 
@@ -75,11 +76,11 @@ function PostCard(props: PostCardProps) {
             <div className="flex flex-col space-y-1.5">
               <Label htmlFor="name">Content</Label>
               <Input
-              id="Content"
-              placeholder="Content of your project"
-              defaultValue={props.postContent}
-              readOnly
-              {...register("content", { required: true })}
+                id="Content"
+                placeholder="Content of your project"
+                defaultValue={props.postContent}
+                readOnly
+                {...register("content", { required: true })}
               />
             </div>
             <div className="flex flex-col space-y-1.5">
@@ -93,24 +94,34 @@ function PostCard(props: PostCardProps) {
             </div>
             <div className="grid w-full max-w-sm items-center gap-1.5">
               <Label htmlFor="picture">Cover</Label>
-              <input
-                type="file"
-                className="file-input file-input-ghost"
-                {...register("coverImage", { required: true })}
-              />
+              <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-500 rounded-lg p-4 cursor-pointer hover:border-gray-300">
+                <input
+                  type="file"
+                  className="hidden"
+                  {...register("coverImage", { required: true })}
+                />
+                <span className="text-gray-400 text-sm">
+                  Click or drop to upload image
+                </span>
+              </label>
             </div>
           </div>
         </form>
       </CardContent>
       <CardFooter className="flex justify-between">
-        <Button onClick={() => {
-          navigate('/blogs')
-        }} variant="outline" className="text-black cursor-pointer">
+        <Button
+          onClick={() => {
+            navigate("/blogs");
+          }}
+          variant="outline"
+          className="text-black cursor-pointer"
+        >
           Cancel
         </Button>
         <Button
           onClick={handleSubmit(submit)}
-          className="bg-black cursor-pointer">
+          className="bg-black cursor-pointer"
+        >
           Post
         </Button>
       </CardFooter>

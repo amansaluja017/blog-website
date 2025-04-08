@@ -23,6 +23,7 @@ interface FormData {
   title: string;
   description: string;
   content: string;
+  coverImage?: FileList;
 }
 
 export function UpdateBlogForm({
@@ -37,12 +38,17 @@ export function UpdateBlogForm({
 
   const submit = async (data: FormData) => {
     const formData = new FormData();
-    Object.keys(data).forEach(key => {
-      formData.append(key, key === "coverImage" ? data[key][0] : data[key]);
-    })
+    Object.keys(data as Record<string, any>).forEach((key) => {
+      formData.append(
+        key,
+        key === "coverImage"
+          ? (data as Record<string, any>)[key][0]
+          : (data as Record<string, any>)[key]
+      );
+    });
     try {
       const response = await axios.patch(
-        `${import.meta.env.VITE_BASE_URL}/api/v1/blogs/update-blog/${blog._id}`,
+        `${import.meta.env.VITE_BASE_URL}/blog/update-blog/${blog._id}`,
         formData,
         {
           headers: {
@@ -95,7 +101,8 @@ export function UpdateBlogForm({
                     onClick={() =>
                       navigate("/editor", { state: { content: blog.content } })
                     }
-                    className="text-red-500 text-sm cursor-pointer hover:underline">
+                    className="text-red-500 text-sm cursor-pointer hover:underline"
+                  >
                     Edit
                   </span>
                 </div>
@@ -109,12 +116,16 @@ export function UpdateBlogForm({
               </div>
               <div className="grid gap-3">
                 <Label htmlFor="coverImage">Cover image</Label>
-                <input
-                  id="coverImage"
-                  type="file"
-                  className="file-input file-input-ghost"
-                  {...register("coverImage")}
-                />
+                <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-500 rounded-lg p-4 cursor-pointer hover:border-gray-300">
+                  <input
+                    type="file"
+                    className="hidden"
+                    {...register("coverImage")}
+                  />
+                  <span className="text-gray-400 text-sm">
+                    Click or drop to upload image
+                  </span>
+                </label>
               </div>
               <div className="flex flex-col gap-3">
                 <Button type="submit" className="w-full cursor-pointer">
@@ -128,7 +139,8 @@ export function UpdateBlogForm({
               navigate("/my-blogs");
               localStorage.removeItem("blog");
             }}
-            className="flex flex-col gap-3 mt-5">
+            className="flex flex-col gap-3 mt-5"
+          >
             <Button className="w-full cursor-pointer">Cancel</Button>
           </div>
         </CardContent>

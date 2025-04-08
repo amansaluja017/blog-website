@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 
 function Content() {
     const { state } = useLocation();
-    const { blog } = state || {};
+    const { blog } = state || {}
 
     return (
         <div className="h-screen bg-gray-100 flex items-start">

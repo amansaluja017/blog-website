@@ -55,14 +55,15 @@ function Blogs() {
       return newSet;
     });
 
-    await axios.post(
-      `${import.meta.env.VITE_BASE_URL}/api/v1/blogs/like-blog/${blogId}`,
+    const response = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/blog/like-blog/${blogId}`,
       {},
       { withCredentials: true }
     );
+    console.log(response);
 
     await axios.get(
-      `${import.meta.env.VITE_BASE_URL}/api/v1/blogs/get-likes/${blogId}`,
+      `${import.meta.env.VITE_BASE_URL}/blog/get-likes/${blogId}`,
       { withCredentials: true }
     );
   };
@@ -253,7 +254,7 @@ function Blogs() {
                               await axios.post(
                                 `${
                                   import.meta.env.VITE_BASE_URL
-                                }/api/v1/blogs/blog-seen/${blog._id}`,
+                                }/blog/blog-seen/${blog._id}`,
                                 {},
                                 { withCredentials: true }
                               );
@@ -261,7 +262,7 @@ function Blogs() {
                               await axios.get(
                                 `${
                                   import.meta.env.VITE_BASE_URL
-                                }/api/v1/blogs/get-views/${blog._id}`,
+                                }/blog/get-views/${blog._id}`,
                                 { withCredentials: true }
                               );
                             } catch (error) {

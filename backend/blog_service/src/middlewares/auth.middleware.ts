@@ -2,7 +2,6 @@ import { NextFunction, Request, Response } from "express";
 
 import jwt from "jsonwebtoken";
 import { ApiError } from "../utils/ApiError";
-import { subscribeToQueue } from "../service/rabbit";
 import mongoose from "mongoose";
 
 interface IUser {
@@ -24,7 +23,7 @@ interface IUser {
 declare global {
   namespace Express {
     interface Request {
-      user?: IUser;
+      user?: mongoose.Types.ObjectId;
     }
   }
 }
@@ -54,20 +53,7 @@ export const verifyJWT = async (
       throw new ApiError(401, "unauthorized");
     }
 
-    subscribeToQueue("user", (data) => {
-      if (!data) {
-        throw new ApiError(401, "unauthorized");
-      }
-
-      const user: IUser = JSON.parse(data);
-
-      if (user._id.toString() !== decoded.id) {
-        throw new ApiError(401, "unauthorized");
-      }
-
-      req.user = user;
-      console.log("User from queue", user);
-    });
+    req.user = decoded.id;
     next();
   } catch (error) {
     console.error("Failed to verify JWT", error);

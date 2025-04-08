@@ -31,6 +31,7 @@ import ContactUs from "./Pages/ContactUs";
 import Content from "./Pages/Content";
 import Dashboard from "./Pages/Admin/Dashboard";
 import Users from "./Pages/Admin/Users";
+import AdminLoginPage from "./Pages/Admin/Login";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -112,6 +113,12 @@ const router = createBrowserRouter(
           <UserProtected>
             <Content />
           </UserProtected>
+        }
+      />
+      <Route
+        path="/admin/login"
+        element={
+            <AdminLoginPage />
         }
       />
       <Route

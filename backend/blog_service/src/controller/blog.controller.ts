@@ -6,6 +6,9 @@ import { Blog } from "../models/blog.model";
 import { ApiResponse } from "../utils/ApiResponse";
 import { uploadImage } from "../utils/Cloudinary";
 import mongoose from "mongoose";
+import { publishToQueue, subscribeToQueue } from "../service/rabbit";
+
+let author: Object = {};
 
 export const blogPost = asyncHandler(async (req: Request, res: Response) => {
   const {
@@ -30,32 +33,52 @@ export const blogPost = asyncHandler(async (req: Request, res: Response) => {
   if (!coverImage) {
     throw new ApiError(500, "Failed to upload cover image");
   }
-  console.log(req.user)
 
-  const blog = await Blog.create({
-    title,
-    description,
-    content,
-    author: req.user,
-    coverImage,
-  });
+  publishToQueue("blog:create", JSON.stringify(req.user));
 
-  if (!blog) {
-    throw new ApiError(500, "Failed to create blog");
-  }
+  const sendResponse = () => {
+    if (Object.keys(author).length > 0) {
+      const blog = new Blog({
+        title,
+        description,
+        content,
+        author,
+        coverImage,
+      });
 
-  return res
-    .status(201)
-    .json(new ApiResponse(200, blog, "blog create successfully"));
+      blog.save()
+        .then((savedBlog) => {
+          return res
+            .status(201)
+            .json(new ApiResponse(201, savedBlog, "Blog created successfully"));
+        })
+        .catch((err) => {
+          console.error(err);
+          throw new ApiError(500, "Failed to create blog");
+        });
+    } else {
+      setTimeout(sendResponse, 1000);
+    }
+  };
+
+  sendResponse();
 });
 
+subscribeToQueue("userInfo", (data) => {
+  if (!data) {
+    throw new ApiError(400, "Invalid author data");
+  }
+
+  author = JSON.parse(data);
+})
+
 export const getAllBlogs = asyncHandler(async (req: Request, res: Response) => {
-  const blogs = await Blog.find().sort({ createdAt: -1 }).populate("author");
+  const blogs = await Blog.find().sort({ createdAt: -1 });
 
   const likedBy = blogs.map((blog) => {
     if (
-      (blog.likedBy as mongoose.Types.ObjectId[]).includes(
-        req.user?._id as mongoose.Types.ObjectId
+      (blog.likedBy).includes(
+        req.user as mongoose.Types.ObjectId
       )
     ) {
       return blog._id;
@@ -70,13 +93,9 @@ export const getAllBlogs = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const myBlogs = asyncHandler(async (req: Request, res: Response) => {
-  const blogs = await Blog.find({ author: req.user?._id }).sort({
+  const blogs = await Blog.find({ author: req.user }).sort({
     createdAt: -1,
   });
-
-  if (blogs.length < 1) {
-    return res.status(200).json(new ApiResponse(404, "Blog not found"));
-  }
 
   const likedBlogs = blogs.map((blog) => {
     return blog.likes;
@@ -112,27 +131,13 @@ export const updateBlog = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(400, "Blog id is required");
   }
 
-  if (!req.files || !("coverImage" in req.files)) {
-    throw new ApiError(400, "Cover image is required");
-  }
-
   const files = req.files as { [key: string]: { path: string }[] };
-  if (
-    !files.coverImage ||
-    !Array.isArray(files.coverImage) ||
-    files.coverImage.length === 0
-  ) {
-    throw new ApiError(400, "Cover image is required");
-  }
-  const coverImagePath = files.coverImage[0].path;
+  const coverImagePath = files.coverImage ? files.coverImage[0]?.path : null;
 
-  if (!coverImagePath) {
-    throw new ApiError(400, "Cover image is required");
-  }
 
-  const coverImage = await uploadImage(coverImagePath);
+  const coverImage = await uploadImage(coverImagePath as string);
 
-  if (!coverImage) {
+  if (coverImagePath && !coverImage) {
     throw new ApiError(500, "Failed to upload cover image");
   }
 
@@ -142,7 +147,7 @@ export const updateBlog = asyncHandler(async (req: Request, res: Response) => {
       title,
       description,
       content,
-      coverImage,
+      ...(coverImage && { coverImage }),
     },
     { new: true }
   );
@@ -185,11 +190,11 @@ export const toogleLikedBlog = asyncHandler(
     const alreadyLiked = await Blog.findOne({ _id: blogId }, { likedBy: true });
     const likedBy = alreadyLiked?.likedBy;
 
-    if (likedBy?.includes(req.user?._id as mongoose.Types.ObjectId)) {
+    if (likedBy?.includes(req.user as mongoose.Types.ObjectId)) {
       await Blog.findByIdAndUpdate(
         blogId,
         {
-          $pull: { likedBy: req.user?._id },
+          $pull: { likedBy: req.user },
         },
         { new: true }
       );
@@ -197,7 +202,7 @@ export const toogleLikedBlog = asyncHandler(
       const blog = await Blog.findByIdAndUpdate(
         blogId,
         {
-          $push: { likedBy: req.user?._id },
+          $push: { likedBy: req.user },
         },
         { new: true }
       );
@@ -244,7 +249,7 @@ export const blogSeenBy = asyncHandler(async (req: Request, res: Response) => {
   await Blog.findByIdAndUpdate(
     blogId,
     {
-      $push: { seenBy: req.user?._id },
+      $push: { seenBy: req.user },
     },
     { new: true }
   );

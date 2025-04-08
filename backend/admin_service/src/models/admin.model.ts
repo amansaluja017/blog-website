@@ -27,7 +27,7 @@ const adminSchema = new Schema(
     role: {
       type: String,
       enum: ["user", "admin"],
-      default: "user",
+      default: "admin",
     },
     isBlocked: {
       type: Boolean,

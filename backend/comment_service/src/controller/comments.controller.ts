@@ -65,7 +65,7 @@ export const editComment = asyncHandler(async (req: Request, res: Response) => {
     "owner"
   );
 
-  if (commentOwner?.owner !== req.user?._id) {
+  if (commentOwner?.owner !== req.user) {
     throw new ApiError(401, "you are not authorized to edit this comment");
   }
 
@@ -96,7 +96,7 @@ export const deleteComment = asyncHandler(
       "owner"
     );
 
-    if (commentOwner?.owner !== req.user?._id) {
+    if (commentOwner?.owner !== req.user) {
       throw new ApiError(401, "you are not authorized to edit this comment");
     }
 

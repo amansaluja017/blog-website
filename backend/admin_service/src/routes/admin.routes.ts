@@ -6,11 +6,14 @@ import {
   getAllUsers,
   deleteUser,
   toggleUserBlock,
+  loginAdmin,
 } from "../controller/admin.controller";
 
 const router = express.Router();
 
-router.use(verifyJWT, verifyAdmin);
+router.route("/login").post(loginAdmin);
+
+router.use(verifyAdmin, verifyJWT);
 
 router.route("/dashboard-stats").get(getDashboardStats);
 router.route("/users").get(getAllUsers);

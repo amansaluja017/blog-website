@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Profile from "./Profile";
 import { useNavigate, Link } from "react-router-dom";
 import { TypedUseSelectorHook, useSelector } from "react-redux";
@@ -17,6 +17,7 @@ function Header() {
   const useTypedSelector: TypedUseSelectorHook<RootState> = useSelector;
   const status = useTypedSelector((state) => state.user.status);
   const userData = useTypedSelector((state) => state.user.userData);
+  const themeRef = useRef<HTMLInputElement>(null);
 
   return (
     <header className="sticky top-0 z-50 w-full bg-base-200 text-white shadow-md">
@@ -28,7 +29,7 @@ function Header() {
             alt="logo"
             className="w-10 h-10 rounded-full"
           />
-          <strong className="ml-3 text-lg font-semibold text-gray-800">
+          <strong className="ml-3 text-lg font-semibold text-white">
             YourBlogs
           </strong>
         </div>
@@ -73,12 +74,19 @@ function Header() {
           </nav>
         )}
 
-        {/* Right Section */}
         <div className="flex items-center space-x-4">
           {status ? (
             <>
               <label className="swap swap-rotate">
-                <input type="checkbox" className="theme-controller" value="forest" />
+                <input onChange={() => {
+                  if (!localStorage.getItem("theme")) {
+                    localStorage.setItem("theme", "forest");
+                  } else if (localStorage.getItem("theme") === "forest") {
+                    localStorage.setItem("theme", "dark");
+                  } else {
+                    localStorage.setItem("theme", "forest");
+                  }
+                }} ref={themeRef} type="checkbox" className="theme-controller" defaultChecked={localStorage.getItem("theme") === "dark" ? false : true} value="forest" />
                 <svg
                   className="swap-off h-6 w-6 fill-current text-gray-600"
                   xmlns="http://www.w3.org/2000/svg"

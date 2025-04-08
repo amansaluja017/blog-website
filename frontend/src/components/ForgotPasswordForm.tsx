@@ -36,7 +36,7 @@ function ForgotPasswordForm({
     setEmail(data.email);
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/api/v1/users/check-user`,
+        `${import.meta.env.VITE_BASE_URL}/user/check-user`,
         data,
         { withCredentials: true }
       );

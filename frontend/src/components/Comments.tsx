@@ -29,7 +29,7 @@ function Comments({ blogId }: { blogId: string }) {
   useEffect(() => {
     const fetchComments = async (blogId: string) => {
       const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/api/v1/comments/get-comments/${blogId}`,
+        `${import.meta.env.VITE_BASE_URL}/comment/get-comments/${blogId}`,
         { withCredentials: true }
       );
 
@@ -44,7 +44,7 @@ function Comments({ blogId }: { blogId: string }) {
   const submit = async (data: any) => {
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/api/v1/comments/post-comment/${blogId}`,
+        `${import.meta.env.VITE_BASE_URL}/comment/post-comment/${blogId}`,
         data,
         { withCredentials: true }
       );

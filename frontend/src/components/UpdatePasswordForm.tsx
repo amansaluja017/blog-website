@@ -28,7 +28,7 @@ export function UpdatePasswordForm({
   const submit = async (data: any) => {
     try {
       const response = await axios.patch(
-        `${import.meta.env.VITE_BASE_URL}/api/v1/users/update-password`,
+        `${import.meta.env.VITE_BASE_URL}/user/update-password`,
         data,
         { withCredentials: true }
       );

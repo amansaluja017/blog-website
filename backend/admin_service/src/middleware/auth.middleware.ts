@@ -3,6 +3,7 @@ import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { IAdmin, Admin } from "../models/admin.model";
 import { ApiError } from "../utils/ApiError";
+import { publishToQueue, subscribeToQueue } from "../service/rabbit";
 
 declare global {
   namespace Express {
@@ -40,15 +41,15 @@ export const verifyJWT = async (
       throw new ApiError(401, "unauthorized");
     }
 
-    const user: IAdmin | null = await Admin.findOne({
+    const admin: IAdmin | null = await Admin.findOne({
       _id: (decoded as DecodedToken).id,
     });
 
-    if (!user) {
+    if (!admin) {
       throw new ApiError(401, "unauthorized");
     }
 
-    req.user = user;
+    req.user = admin;
     next();
   } catch (error) {
     console.error("Failed to verify JWT", error);

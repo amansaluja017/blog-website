@@ -28,14 +28,14 @@ export function UpdateDetailsForm({
 
   const { register, handleSubmit } = useForm();
 
-  const submit = async (data: any) => {
+  const submit = async (data: Record<string, any>) => {
     const formData = new FormData();
     Object.keys(data).forEach((key: string) => {
-      formData.append(key, key === "avatar" ? data[key][0] : data[key]);
+      formData.append(key, key === "avatar" && data[key]?.[0] ? data[key][0] : data[key]);
     });
     try {
       const response = await axios.patch(
-        `${import.meta.env.VITE_BASE_URL}/api/v1/users/update-details`,
+        `${import.meta.env.VITE_BASE_URL}/user/update-details`,
         formData,
         {
           headers: {
@@ -44,12 +44,13 @@ export function UpdateDetailsForm({
           withCredentials: true,
         }
       );
+      console.log("Response:", response.data);
       if (response.status === 200) {
         dispatch(Update(response.data.data));
         navigate("/blogs");
       }
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      console.error("Error:", error.response?.data || error.message);
     }
   };
 
@@ -94,12 +95,16 @@ export function UpdateDetailsForm({
               </div>
               <div className="grid gap-3">
                 <Label htmlFor="avatar">Avatar</Label>
-                <input
-                  id="avatar"
-                  type="file"
-                  className="file-input file-input-ghost"
-                  {...register("avatar")}
-                />
+                <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-500 rounded-lg p-4 cursor-pointer hover:border-gray-300">
+                  <input
+                    type="file"
+                    className="hidden"
+                    {...register("avatar")}
+                  />
+                  <span className="text-gray-400 text-sm">
+                    Click or drop to upload image
+                  </span>
+                </label>
               </div>
               <div className="flex flex-col gap-3">
                 <Button type="submit" className="w-full cursor-pointer">

@@ -22,7 +22,7 @@ export function OtpSection({
   const submit = async () => {
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/api/v1/users/verify-otp`,
+        `${import.meta.env.VITE_BASE_URL}/user/verify-otp`,
         {
           otp,
           value,

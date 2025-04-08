@@ -55,7 +55,7 @@ function Profile() {
 
   const handleLogout = async () => {
     const response = await axios.post(
-      `${import.meta.env.VITE_BASE_URL}/api/v1/users/logout`,
+      `${import.meta.env.VITE_BASE_URL}/user/logout`,
       {},
       { withCredentials: true }
     );
@@ -79,7 +79,7 @@ function Profile() {
   const emailVarification = async () => {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/api/v1/users/email-verify`,
+        `${import.meta.env.VITE_BASE_URL}/user/email-verify`,
         { withCredentials: true }
       );
       if (response.status === 200) {

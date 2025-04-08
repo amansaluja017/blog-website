@@ -160,8 +160,6 @@ export const getCurrentUser = asyncHandler(
       return res.status(404).json(new ApiResponse(404, null, "User not found"));
     }
 
-    publishToQueue("user", JSON.stringify(user));
-
     return res
       .status(200)
       .json(new ApiResponse(200, user, "User found successfully"));
@@ -220,13 +218,13 @@ export const updateDetails = asyncHandler(
     const { firstName, lastName, email } = req.body;
 
     const files = req.files as { [key: string]: { path: string }[] };
-    const avatarImagePath = files.avatar[0].path;
+    const avatarImagePath = files.avatar ? files.avatar[0].path : null;
 
-    const avatar = await uploadImage(avatarImagePath);
+    const avatar = await uploadImage(avatarImagePath as string);
 
     const user = await User.findOneAndUpdate(
       { _id: req.user?._id },
-      { firstName, lastName, email, avatar },
+      { firstName, lastName, email, ...(avatar && {avatar}) },
       { new: true }
     );
 

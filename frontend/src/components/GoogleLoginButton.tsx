@@ -14,7 +14,7 @@ const GoogleLoginButton = () => {
   useEffect(() => {
     const fetchToken = async () => {
       const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/api/v1/users/googleLogin`,
+        `${import.meta.env.VITE_BASE_URL}/user/googleLogin`,
         { token },
         { withCredentials: true }
       );

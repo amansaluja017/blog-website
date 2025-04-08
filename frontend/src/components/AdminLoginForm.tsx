@@ -9,14 +9,13 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import React from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import axios from "axios";
-import { Update } from "@/store/userSlice";
+import { useDispatch } from "react-redux";
+import { login } from "@/store/userSlice";
 
-export function SetPasswordForm({
+export function AdminLoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
@@ -27,14 +26,15 @@ export function SetPasswordForm({
 
   const submit = async (data: any) => {
     try {
-      const response = await axios.patch(
-        `${import.meta.env.VITE_BASE_URL}/user/set-password`,
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/admin/login`,
         data,
         { withCredentials: true }
       );
+      console.log(response)
+
       if (response.status === 200) {
-        dispatch(Update(response.data.data));
-        console.log(response)
+        dispatch(login(response.data.data));
         navigate("/blogs");
       }
     } catch (error) {
@@ -46,33 +46,43 @@ export function SetPasswordForm({
     <div className={cn("flex flex-col gap-6 ", className)} {...props}>
       <Card className="bg-[#191E24] text-white border-[#0c0f13] shadow-2xl">
         <CardHeader>
-          <CardTitle>Set Password</CardTitle>
-          <CardDescription></CardDescription>
+          <CardTitle>Login to your account</CardTitle>
+          <CardDescription>
+            Enter your email below to login to your account
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit(submit)}>
+          <form onClick={handleSubmit(submit)}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-3">
-                <Label htmlFor="Password">Password</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
-                  id="Password"
-                  type="password"
-                  placeholder="password"
-                  {...register("password")}
+                  id="email"
+                  type="email"
+                  placeholder="m@example.com"
+                  required
+                  {...register("email", { required: true })}
                 />
               </div>
               <div className="grid gap-3">
-                <Label htmlFor="ConfirmPassword">Confirm Password</Label>
+                <div className="flex items-center">
+                  <Label htmlFor="password">Password</Label>
+                  <Link
+                    to="/forgot-password"
+                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline cursor-pointer">
+                    Forgot your password?
+                  </Link>
+                </div>
                 <Input
-                  id="ConfirmPassword"
+                  id="password"
                   type="password"
-                  placeholder="confirm password"
-                  {...register("confirmPassword")}
+                  required
+                  {...register("password", { required: true })}
                 />
               </div>
               <div className="flex flex-col gap-3">
                 <Button type="submit" className="w-full cursor-pointer">
-                  Set Password
+                  Login
                 </Button>
               </div>
             </div>
