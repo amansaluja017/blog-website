@@ -1,160 +1,188 @@
-# Modern Blog Website
+# Blog Website with Microservices Architecture
 
-A full-stack modern blog platform built with React, TypeScript, and Node.js. Features a rich text editor, authentication, and responsive design.
+A full-stack blog platform built with TypeScript, React, Express, and Node.js using a microservices architecture.
 
-## Key Features
+## Features
 
-- 🎨 Rich Text Editor with TipTap
-- 🔒 Multi-mode Authentication (Email & Google OAuth)
-- 📱 Responsive Design with Tailwind CSS & DaisyUI
-- 🌓 Dark/Light Theme Support
-- 🖼️ Image Upload with Cloudinary
-- 🔑 Password Recovery System
-- 👤 User Profile Management
-- ✍️ Blog Management (CRUD Operations)
-- 🎯 Protected Routes
-- 🔍 Content Search
+- **User Service**
+  - User authentication (Local & Google OAuth)
+  - Email verification
+  - Password management
+  - Profile updates
+  - Follow/Unfollow system
+  - Password reset
+  
+- **Blog Service**
+  - Create, read, update, delete blogs
+  - Like/Unlike blogs
+  - View count tracking
+  - Cover image upload
+  - Rich text editor
 
-## Technology Stack
+- **Admin Service**
+  - Admin dashboard
+  - User management
+  - Analytics
+  - Content moderation
+
+- **Comment Service**
+  - Add/delete comments
+  - Nested comments support
+
+## Tech Stack
 
 ### Frontend
-- React 19 with TypeScript
-- Vite for build tooling
-- Redux Toolkit for state management
-- TipTap for rich text editing
-- Tailwind CSS & DaisyUI for styling
-- React Router v7 for routing
-- Axios for API calls
-- Google OAuth integration
+- React with TypeScript
+- Vite
+- TailwindCSS
+- Redux Toolkit
+- React Router
 
 ### Backend
-- Node.js with Express
-- TypeScript
-- MongoDB with Mongoose
-- JWT for authentication
-- Cloudinary for media storage
-- Nodemailer for emails
-- bcrypt for password hashing
+- Node.js with TypeScript
+- Express.js
+- MongoDB
+- RabbitMQ for inter-service communication
+- JWT Authentication
+- Cloudinary for image storage
+- Nodemailer for email services
 
-## Project Structure
+## Microservices Architecture
 
-```
-blog-website/
-├── frontend/
-│   ├── src/
-│   │   ├── components/    # Reusable UI components
-│   │   ├── Pages/        # Page components
-│   │   ├── store/        # Redux store
-│   │   └── main.tsx      # App entry point
-│   ├── public/           # Static assets
-│   └── index.html        # HTML template
-└── backend/
-    ├── src/
-    │   ├── controllers/  # Request handlers
-    │   ├── models/       # Database schemas
-    │   ├── routes/       # API routes
-    │   └── utils/        # Helper functions
-    └── index.ts          # Server entry point
-```
+1. **User Service**: Handles user authentication and profile management
+2. **Blog Service**: Manages blog posts and related operations
+3. **Admin Service**: Provides administrative functionalities
+4. **Comment Service**: Manages comment system
+5. **API Gateway**: Routes requests to appropriate services
 
 ## Setup Instructions
 
-1. **Clone Repository**
+### Prerequisites
+- Node.js (v14 or higher)
+- MongoDB
+- RabbitMQ
+- TypeScript
+
+### Environment Variables
+
+Create .env files in each service directory:
+
+```env
+# Common
+NODE_ENV=development
+PORT=xxxx
+MONGODB_URI=your_mongodb_uri
+SECRET=your_jwt_secret
+RABBIT_URL=amqp://localhost:5672
+
+# User Service
+GOOGLE_CLIENT_ID=your_google_client_id
+NODEMAILER_USER=your_email
+NODEMAILER_PASS=your_email_password
+
+# For image upload
+CLOUDINARY_CLOUD_NAME=your_cloudinary_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+```
+
+### Installation
+
+1. Clone the repository:
 ```bash
 git clone https://github.com/amansaluja017/blog-website.git
 cd blog-website
 ```
 
-2. **Environment Variables**
-
-Frontend (.env):
-```
-VITE_BASE_URL=http://localhost:8000
-VITE_GOOGLE_CLIENT_ID=your_google_client_id
-```
-
-Backend (.env):
-```
-PORT=8000
-MONGODB_URI=your_mongodb_uri
-JWT_SECRET=your_jwt_secret
-CLOUDINARY_NAME=your_cloudinary_name
-CLOUDINARY_API_KEY=your_cloudinary_key
-CLOUDINARY_API_SECRET=your_cloudinary_secret
-SMTP_HOST=your_smtp_host
-SMTP_PORT=your_smtp_port
-SMTP_USER=your_smtp_user
-SMTP_PASS=your_smtp_password
-```
-
-3. **Install Dependencies & Run**
-
+2. Install dependencies for all services:
 ```bash
-# Frontend Setup
+# Install frontend dependencies
 cd frontend
 npm install
+
+# Install backend service dependencies
+cd ../backend/user_service
+npm install
+
+cd ../blog_service
+npm install
+
+cd ../admin_service
+npm install
+
+cd ../comment_service
+npm install
+
+cd ../gateway
+npm install
+```
+
+3. Start the services:
+
+```bash
+# Start RabbitMQ (if using Docker)
+docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:management
+
+# Start each service
+# In separate terminals:
+
+# Frontend
+cd frontend
 npm run dev
 
-# Backend Setup
-cd ../backend
-npm install
+# User Service
+cd backend/user_service
+npm run dev
+
+# Blog Service
+cd backend/blog_service
+npm run dev
+
+# Admin Service
+cd backend/admin_service
+npm run dev
+
+# Comment Service
+cd backend/comment_service
+npm run dev
+
+# Gateway
+cd backend/gateway
 npm run dev
 ```
 
 ## API Documentation
 
-### Authentication Endpoints
-- `POST /api/v1/users/register` - User registration
-- `POST /api/v1/users/login` - Email login
-- `POST /api/v1/users/google-login` - Google OAuth login
-- `POST /api/v1/users/forgot-password` - Password recovery
-- `POST /api/v1/users/reset-password` - Reset password
-- `GET /api/v1/users/profile` - Get user profile
-- `PATCH /api/v1/users/profile` - Update profile
+### User Service Endpoints
+- POST /register - Register new user
+- POST /login - User login
+- GET /current-user - Get current user
+- PATCH /update-details - Update user details
+- POST /verify-email - Send email verification
+- POST /verify-otp - Verify email OTP
 
-### Blog Endpoints
-- `GET /api/v1/blogs` - List all blogs
-- `GET /api/v1/blogs/:id` - Get single blog
-- `POST /api/v1/blogs` - Create blog
-- `PUT /api/v1/blogs/:id` - Update blog
-- `DELETE /api/v1/blogs/:id` - Delete blog
-- `GET /api/v1/blogs/my-blogs` - User's blogs
+### Blog Service Endpoints
+- POST /post - Create new blog
+- GET /getBlogs - Get all blogs
+- GET /getMyBlogs - Get user's blogs
+- PATCH /update-blog/:blogId - Update blog
+- DELETE /delete-blog/:blogId - Delete blog
+- POST /like-blog/:blogId - Toggle like on blog
 
-## Features in Detail
+### Admin Service Endpoints
+- GET /dashboard-stats - Get dashboard statistics
+- GET /users - Get all users
+- DELETE /users/:userId - Delete user
+- PATCH /users/:userId/toggle-block - Block/unblock user
 
-### Rich Text Editor
-- TipTap integration
-- Multiple formatting options
-- Image embedding
-- Real-time preview
-
-### Authentication System
-- JWT-based authentication
-- Google OAuth integration
-- Password recovery via email
-- Protected route middleware
-
-### User Management
-- Profile customization
-- Password management
-- Blog management
-- Activity tracking
-
-### Blog Features
-- Create/Edit/Delete posts
-- Rich text content
-- Cover image upload
-- Author attribution
-- Search functionality
-
-## Contribution
+## Contributing
 
 1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open Pull Request
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ## License
 
-This project is licensed under the MIT License
+This project is licensed under the MIT License - see the LICENSE file for details

@@ -8,7 +8,7 @@ import mongoose, { ObjectId } from "mongoose";
 import crypto from "crypto";
 import { mailOptions } from "../nodemailer/nodemailerConfig";
 import { uploadImage } from "../utils/Cloudinary";
-import { publishToQueue } from "../service/rabbit";
+import { publishToQueue, subscribeToQueue } from "../service/rabbit";
 
 interface userTypes {
   firstName: string;
@@ -73,7 +73,7 @@ export const userRegister = asyncHandler(
       user._id as unknown as mongoose.Schema.Types.ObjectId
     );
 
-    const userCount = await User.countDocuments({role: "user"});
+    const userCount = await User.countDocuments({ role: "user" });
 
     publishToQueue("userCount", JSON.stringify(userCount));
 
@@ -137,7 +137,7 @@ export const googleUser = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(500, "Failed to register user");
   }
 
-  const userCount = await User.countDocuments({role: "user"});
+  const userCount = await User.countDocuments({ role: "user" });
 
   publishToQueue("userCount", JSON.stringify(userCount));
 
@@ -224,7 +224,7 @@ export const updateDetails = asyncHandler(
 
     const user = await User.findOneAndUpdate(
       { _id: req.user?._id },
-      { firstName, lastName, email, ...(avatar && {avatar}) },
+      { firstName, lastName, email, ...(avatar && { avatar }) },
       { new: true }
     );
 
@@ -397,81 +397,34 @@ export const createPassword = asyncHandler(
 export const followers = asyncHandler(async (req: Request, res: Response) => {
   const { userId } = req.params;
 
-  const loginUser = await User.findById(req.user?._id);
-
-  if (!loginUser) {
-    throw new ApiError(404, "User not found");
+  if (!userId) {
+    throw new ApiError(404, "userId not found")
   }
 
-  const loginUserFollowing = loginUser.following;
+  
+});
 
-  if (loginUserFollowing?.includes(userId)) {
-    const unfollowUser = await User.findByIdAndUpdate(
-      req.user?._id,
-      {
-        $pull: { following: userId },
-      },
-      { new: true }
-    );
+subscribeToQueue("user", async (data) => {
+  try {
+    const userId = JSON.parse(data);
 
-    if (!unfollowUser) {
-      throw new ApiError(500, "Failed to unfollow user");
+    const user = await User.findById(userId).select("-password -refreshToken -__v");
+
+    if (!user) {
+      throw new ApiError(401, "unauthorized");
     }
+    console.log("User data from blog service:", user);
 
-    const unfollowedUser = await User.findByIdAndUpdate(
-      userId,
-      {
-        $pull: { followers: req.user?._id },
-      },
-      { new: true }
-    );
-
-    if (!unfollowedUser) {
-      throw new ApiError(500, "Failed to remove follower");
-    }
-
-    return res
-      .status(200)
-      .json(
-        new ApiResponse(
-          200,
-          { unfollowUser, unfollowedUser },
-          "follower unfollowed successfully"
-        )
-      );
-  } else {
-    const followUser = await User.findByIdAndUpdate(
-      req.user?._id,
-      {
-        $push: { following: userId },
-      },
-      { new: true }
-    );
-
-    if (!followUser) {
-      throw new ApiError(500, "Failed to follow user");
-    }
-
-    const followedUser = await User.findByIdAndUpdate(
-      userId,
-      {
-        $push: { followers: req.user?._id },
-      },
-      { new: true }
-    );
-
-    if (!followedUser) {
-      throw new ApiError(500, "Failed to add follower");
-    }
-
-    return res
-      .status(200)
-      .json(
-        new ApiResponse(
-          200,
-          { followUser, followedUser },
-          "follower followed successfully"
-        )
-      );
+    publishToQueue("userInfo", JSON.stringify(user));
+  } catch (error) {
+    console.error("Error processing blog:create message:", error);
   }
 });
+
+subscribeToQueue("getUsersBlogs", async (data) => {
+  const ids = JSON.parse(data);
+
+  const authors = await User.find({ _id: ids })
+
+  publishToQueue("users", JSON.stringify(authors))
+})

@@ -41,17 +41,6 @@ export const verifyJWT = async (
       throw new ApiError(401, "unauthorized");
     }
 
-    publishToQueue("checkAdmin", JSON.stringify(decoded.id));
-
-    subscribeToQueue("adminVerified", (data) => {
-      if (data) {
-        const parsedData = JSON.parse(data);
-
-        req.user = parsedData;
-        next();
-      }
-    });
-
     const user: IUser | null = await User.findOne({
       _id: (decoded as DecodedToken).id,
     });

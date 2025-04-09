@@ -48,8 +48,27 @@ function Profile() {
         console.error("Error fetching user data:", error);
       }
     };
-    if (status) {
+
+    const fetchAdmin = async () => {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_BASE_URL}/admin/getCurrentUser`,
+          { withCredentials: true }
+        );
+        if (response.status === 200) {
+          setFollowers(response.data.data.followers.length);
+          setFollowing(response.data.data.following.length);
+          localStorage.setItem("following", JSON.stringify(response.data.data.following));
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    if (status && user.role === "user") {
       fetchUser();
+    } else {
+      fetchAdmin();
     }
   }, [status]);
 

@@ -13,9 +13,10 @@ app.use(cors({
     credentials: true,
 }));
 
+app.use(express.json());
 app.use(express.static(path.join(__dirname, "../public")));
 app.use(express.urlencoded({ extended: true, limit: "40kb" }));
-app.use(express.json({ limit: "40kb" }));
+
 app.use(cookieParser());
 
 connect();

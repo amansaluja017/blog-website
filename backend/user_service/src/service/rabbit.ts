@@ -1,5 +1,4 @@
 import amqp from "amqplib";
-import { queues } from "../queues/queue";
 
 let channel: amqp.Channel | null = null;
 
@@ -10,7 +9,6 @@ async function connect() {
   const conn = await amqp.connect(process.env.RABBIT_URL);
   channel = await conn.createChannel();
   console.log("Connected to RabbitMQ");
-  queues();
 }
 
 async function subscribeToQueue(

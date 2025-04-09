@@ -20,9 +20,6 @@ app.use(cookieParser());
 
 connect();
 
-import { queues } from "./queues/queue";
-queues();
-
 import userRoutes from "./routes/user.routes";
 
 app.use("/", userRoutes);

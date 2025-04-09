@@ -42,6 +42,7 @@ function Blogs() {
   const navigate = useNavigate();
   const useTypedSelector: TypedUseSelectorHook<RootState> = useSelector;
   const status: boolean = useTypedSelector((state) => state.user.status);
+  const user = useTypedSelector((state) => state.user.userData);
 
   const heartToogle = async (blogId: string) => {
     setLikedBlogs((prev) => {
@@ -86,11 +87,20 @@ function Blogs() {
       return newSet;
     });
 
-    await axios.post(
-      `${import.meta.env.VITE_BASE_URL}/user/followers/${userId}`,
-      {},
-      { withCredentials: true }
-    );
+    if (user.role === "user") {
+      await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/user/followers/${userId}`,
+        {},
+        { withCredentials: true }
+      );
+    } else {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/admin/followers/${userId}`,
+        {},
+        { withCredentials: true }
+      );
+      console.log(response)
+    }
   }
 
   useEffect(() => {
@@ -104,7 +114,7 @@ function Blogs() {
 
         if (response.status === 200) {
           console.log(response)
-          setBlogs(response.data.data.blogs);
+          setBlogs(response.data.data.blogsWithAuthor);
           localStorage.setItem("likedBlogs", JSON.stringify(response.data.data.likedBy || []));
         }
       } catch (error) {

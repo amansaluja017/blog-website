@@ -31,26 +31,55 @@ export function UpdateDetailsForm({
   const submit = async (data: Record<string, any>) => {
     const formData = new FormData();
     Object.keys(data).forEach((key: string) => {
-      formData.append(key, key === "avatar" && data[key]?.[0] ? data[key][0] : data[key]);
-    });
-    try {
-      const response = await axios.patch(
-        `${import.meta.env.VITE_BASE_URL}/user/update-details`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          withCredentials: true,
-        }
+      formData.append(
+        key,
+        key === "avatar" && data[key]?.[0] ? data[key][0] : data[key]
       );
-      console.log("Response:", response.data);
-      if (response.status === 200) {
-        dispatch(Update(response.data.data));
-        navigate("/blogs");
+    });
+    if (user.role === "user") {
+      try {
+        const response = await axios.patch(
+          `${import.meta.env.VITE_BASE_URL}/user/update-details`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+            withCredentials: true,
+          }
+        );
+        console.log("Response:", response.data);
+        if (response.status === 200) {
+          dispatch(Update(response.data.data));
+          navigate("/blogs");
+        }
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          console.error("Error:", error.response?.data || error.message);
+        } else {
+          console.error("Unexpected error:", error);
+        }
       }
-    } catch (error: any) {
-      console.error("Error:", error.response?.data || error.message);
+    } else if (user.role === "admin") {
+      try {
+        const response = await axios.patch(
+          `${import.meta.env.VITE_BASE_URL}/admin/update-details`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+            withCredentials: true,
+          }
+        );
+        console.log("Response:", response.data);
+        if (response.status === 200) {
+          dispatch(Update(response.data.data));
+          navigate("/blogs");
+        }
+      } catch (error: any) {
+        console.error("Error:", error.response?.data || error.message);
+      }
     }
   };
 

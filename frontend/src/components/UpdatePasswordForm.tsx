@@ -10,11 +10,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import React from "react";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import { Update } from "@/store/userSlice";
+import { RootState } from "@/store/confStore";
 
 export function UpdatePasswordForm({
   className,
@@ -22,22 +23,40 @@ export function UpdatePasswordForm({
 }: React.ComponentProps<"div">) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const useTypedSelector: TypedUseSelectorHook<RootState> = useSelector;
+  const user = useTypedSelector((state) => state.user.userData);
 
   const { register, handleSubmit } = useForm();
 
   const submit = async (data: any) => {
-    try {
-      const response = await axios.patch(
-        `${import.meta.env.VITE_BASE_URL}/user/update-password`,
-        data,
-        { withCredentials: true }
-      );
-      if (response.status === 200) {
-        dispatch(Update(response.data.data));
-        navigate("/blogs");
+    if (user.role === "user") {
+      try {
+        const response = await axios.patch(
+          `${import.meta.env.VITE_BASE_URL}/user/update-password`,
+          data,
+          { withCredentials: true }
+        );
+        if (response.status === 200) {
+          dispatch(Update(response.data.data));
+          navigate("/blogs");
+        }
+      } catch (error) {
+        console.error(error);
       }
-    } catch (error) {
-      console.error(error);
+    } else {
+      try {
+        const response = await axios.patch(
+          `${import.meta.env.VITE_BASE_URL}/admin/update-password`,
+          data,
+          { withCredentials: true }
+        );
+        if (response.status === 200) {
+          dispatch(Update(response.data.data));
+          navigate("/blogs");
+        }
+      } catch (error) {
+        console.error(error);
+      }
     }
   };
 

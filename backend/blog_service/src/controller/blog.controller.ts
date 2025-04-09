@@ -5,10 +5,26 @@ import { ApiError } from "../utils/ApiError";
 import { Blog } from "../models/blog.model";
 import { ApiResponse } from "../utils/ApiResponse";
 import { uploadImage } from "../utils/Cloudinary";
-import mongoose from "mongoose";
+import mongoose, { mongo } from "mongoose";
 import { publishToQueue, subscribeToQueue } from "../service/rabbit";
 
-let author: Object = {};
+interface userTypes {
+  _id: mongoose.Types.ObjectId,
+  firstName: string,
+  lastName: string,
+  avatar: string,
+  role: string
+}
+
+interface authorType {
+  _id: mongoose.Types.ObjectId,
+  role: string
+}
+
+let author: authorType = {} as authorType;
+
+let users: Array<userTypes> = [];
+let admins: Array<userTypes> = [];
 
 export const blogPost = asyncHandler(async (req: Request, res: Response) => {
   const {
@@ -36,13 +52,16 @@ export const blogPost = asyncHandler(async (req: Request, res: Response) => {
 
   publishToQueue("blog:create", JSON.stringify(req.user));
 
-  const sendResponse = () => {
+  setTimeout(() => {
     if (Object.keys(author).length > 0) {
       const blog = new Blog({
         title,
         description,
         content,
-        author,
+        author: {
+          authorId: author._id,
+          authorRole: author.role
+        },
         coverImage,
       });
 
@@ -56,12 +75,17 @@ export const blogPost = asyncHandler(async (req: Request, res: Response) => {
           console.error(err);
           throw new ApiError(500, "Failed to create blog");
         });
-    } else {
-      setTimeout(sendResponse, 1000);
     }
-  };
+  }, 3000)
 
-  sendResponse();
+});
+
+subscribeToQueue("adminVerified", (data) => {
+  if (!data) {
+    throw new ApiError(400, "Invalid author data");
+  }
+
+  author = JSON.parse(data);
 });
 
 subscribeToQueue("userInfo", (data) => {
@@ -70,30 +94,56 @@ subscribeToQueue("userInfo", (data) => {
   }
 
   author = JSON.parse(data);
+  console.log(author);
 })
 
 export const getAllBlogs = asyncHandler(async (req: Request, res: Response) => {
   const blogs = await Blog.find().sort({ createdAt: -1 });
+  const userIds = blogs.filter(blog => blog.author.authorRole === "user").map(blog => blog.author.authorId);
+  const adminIds = blogs.filter(blog => blog.author.authorRole === "admin").map(blog => blog.author.authorId);
 
-  const likedBy = blogs.map((blog) => {
-    if (
-      (blog.likedBy).includes(
-        req.user as mongoose.Types.ObjectId
-      )
-    ) {
-      return blog._id;
-    }
-  });
+  publishToQueue("getUsersBlogs", JSON.stringify(userIds));
+  publishToQueue("getAdminBlogs", JSON.stringify(adminIds));
 
-  return res
-    .status(200)
-    .json(
-      new ApiResponse(200, { blogs, likedBy }, "Blogs fetched successfully")
-    );
+  setTimeout(() => {
+    const blogsWithAuthor = blogs.map(blog => ({
+      ...blog.toObject(),
+      author: admins.find(admin => admin._id === blog.author.authorId) || users.find(user => user._id === blog.author.authorId)
+    }));
+
+    const likedBy = blogs.map((blog) => {
+      if ((blog.likedBy).includes(req.user as mongoose.Types.ObjectId)) {
+        return blog._id;
+      }
+    });
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          { blogsWithAuthor, likedBy },
+          "Blogs fetched successfully"
+        )
+      );
+  }, 3000)
 });
 
+subscribeToQueue("users", (data) => {
+
+  const parsedData = JSON.parse(data);
+
+  users = parsedData;
+})
+
+subscribeToQueue("admins", (data) => {
+  const parsedData = JSON.parse(data);
+
+  admins = parsedData;
+})
+
 export const myBlogs = asyncHandler(async (req: Request, res: Response) => {
-  const blogs = await Blog.find({ author: req.user }).sort({
+  const blogs = await Blog.find({ "author.authorId": req.user }).sort({
     createdAt: -1,
   });
 

@@ -20,7 +20,6 @@ interface PostCardProps {
 }
 
 function PostCard(props: PostCardProps) {
-  console.log(props.postContent);
   const navigate = useNavigate();
   const { register, handleSubmit } = useForm();
   const useTypedSelector: TypedUseSelectorHook<RootState> = useSelector;
