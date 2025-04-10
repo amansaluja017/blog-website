@@ -33,7 +33,7 @@ export default function Users() {
   const fetchUsers = async () => {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/api/v1/admin/users`,
+        `${import.meta.env.VITE_BASE_URL}/admin/users`,
         { withCredentials: true }
       );
       setUsers(response.data.data);
@@ -48,11 +48,15 @@ export default function Users() {
     }
 
     try {
-      await axios.delete(
-        `${import.meta.env.VITE_BASE_URL}/api/v1/admin/users/${userId}`,
+      const response = await axios.delete(
+        `${import.meta.env.VITE_BASE_URL}/admin/users/${userId}`,
         { withCredentials: true }
       );
-      fetchUsers(); // Refresh the user list
+
+      if(response.status = 200) {
+        fetchUsers();
+      }
+      
     } catch (error) {
       console.error("Failed to delete user:", error);
     }
@@ -61,7 +65,7 @@ export default function Users() {
   const handleToggleBlock = async (userId: string) => {
     try {
       await axios.patch(
-        `${import.meta.env.VITE_BASE_URL}/api/v1/admin/users/${userId}/toggle-block`,
+        `${import.meta.env.VITE_BASE_URL}/admin/users/${userId}/toggle-block`,
         {},
         { withCredentials: true }
       );

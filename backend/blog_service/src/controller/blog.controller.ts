@@ -329,3 +329,27 @@ export const getViews = asyncHandler(async (req: Request, res: Response) => {
     .status(200)
     .json(new ApiResponse(200, views, "views fetched successfully"));
 });
+
+subscribeToQueue("totalBlogs", async () => {
+  const blogsCount = await Blog.countDocuments();
+
+  if (blogsCount > 0) {
+    publishToQueue("blogCount", JSON.stringify(blogsCount))
+  }
+});
+
+subscribeToQueue("getRecentBlogs", async () => {
+  const recentBlogs = await Blog.find().sort({createdAt: -1}).limit(5);
+
+  await publishToQueue("recentBlogs", JSON.stringify(recentBlogs));
+})
+
+subscribeToQueue("userBlogsDelete", async (data) => {
+  const userId = JSON.parse(data);
+
+  const blogs = await Blog.find({"author.authorId": userId});
+
+  blogs.map(async(blog) => {
+    await Blog.findByIdAndDelete(blog._id);
+  })
+});

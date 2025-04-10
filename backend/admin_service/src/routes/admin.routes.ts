@@ -16,11 +16,9 @@ import { upload } from "../middleware/multer.middleware";
 
 const router = express.Router();
 
-
-router.use(verifyJWT);
 router.route("/login").post(loginAdmin);
 
-router.use(verifyAdmin, verifyJWT);
+router.use(verifyJWT, verifyAdmin);
 
 router.route("/getCurrentUser").get(getAdmin);
 router.route("/update-details").patch(upload.fields([

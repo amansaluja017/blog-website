@@ -50,7 +50,7 @@ export default function Dashboard() {
     const fetchDashboardData = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_BASE_URL}/api/v1/admin/dashboard-stats`,
+          `${import.meta.env.VITE_BASE_URL}/admin/dashboard-stats`,
           { withCredentials: true }
         );
 

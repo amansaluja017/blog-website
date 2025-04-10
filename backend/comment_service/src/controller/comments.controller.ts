@@ -3,6 +3,7 @@ import { asyncHandler } from "../utils/asyncHandler";
 import { Comment } from "../model/comments.model";
 import { ApiError } from "../utils/ApiError";
 import { ApiResponse } from "../utils/ApiResponse";
+import { publishToQueue, subscribeToQueue } from "../service/rabbit";
 
 export const postComment = asyncHandler(async (req: Request, res: Response) => {
   const { content } = req.body;
@@ -111,3 +112,21 @@ export const deleteComment = asyncHandler(
       .json(new ApiResponse(200, comment, "comment deleted successfully"));
   }
 );
+
+subscribeToQueue("totalComments", async () => {
+  const commentsCount = await Comment.countDocuments();
+
+  if (commentsCount > 0) {
+    publishToQueue("commentCount", JSON.stringify(commentsCount))
+  }
+});
+
+subscribeToQueue("userCommentsDelete", async (data) => {
+  const userId = JSON.parse(data);
+
+  const comments = await Comment.find({"author.authorId": userId});
+
+  comments.map(async(comment) => {
+    await Comment.findByIdAndDelete(comment._id);
+  })
+});

@@ -11,6 +11,7 @@ import { uploadImage } from "../utils/Cloudinary";
 import { publishToQueue, subscribeToQueue } from "../service/rabbit";
 
 interface userTypes {
+  _id: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -177,6 +178,12 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 
   if (!user) {
     throw new ApiError(404, "User not found");
+  }
+
+  const blokedUser = user.isBlocked;
+
+  if(blokedUser) {
+    throw new ApiError(403, "Access denied: because your id is blocked")
   }
 
   const isMatch = await user.comparePassword(password);
@@ -401,7 +408,47 @@ export const followers = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(404, "userId not found")
   }
 
-  
+  const loginUser = await User.findById(req.user?._id);
+
+  if (!loginUser) {
+    throw new ApiError(401, "unauthorized")
+  }
+
+  const following = loginUser.following;
+
+  if(following?.includes(userId)) {
+    await User.findByIdAndUpdate(req.user?._id, {
+      $pull: {following: userId}
+    })
+
+    const unfollowUser = await User.findById(userId);
+
+    if (unfollowUser) {
+      await User.findByIdAndUpdate(userId, {
+        $pull: {followers: req.user?._id}
+      }, {new: true})
+    } else {
+      publishToQueue("unfollowAdmin", JSON.stringify({adminId: userId, userId: req.user?._id}));
+    }
+
+    return res.status(200).json(new ApiResponse(200, {}, "unfollow success"))
+  } else {
+    await User.findByIdAndUpdate(req.user?._id, {
+      $push: {following: userId}
+    })
+
+    const followUser = await User.findById(userId);
+
+    if(followUser) {
+      await User.findByIdAndUpdate(userId, {
+        $push: {followers: req.user?._id}
+      }, {new: true})
+    } else {
+      publishToQueue("followAdmin", JSON.stringify({adminId: userId, userId: req.user?._id}));
+    }
+
+    return res.status(200).json(new ApiResponse(200, {}, "follow success"))
+  }
 });
 
 subscribeToQueue("user", async (data) => {
@@ -413,7 +460,10 @@ subscribeToQueue("user", async (data) => {
     if (!user) {
       throw new ApiError(401, "unauthorized");
     }
-    console.log("User data from blog service:", user);
+
+    if(user.isBlocked) {
+      throw new ApiError(403, "Access denid: user id is blocked")
+    }
 
     publishToQueue("userInfo", JSON.stringify(user));
   } catch (error) {
@@ -428,3 +478,51 @@ subscribeToQueue("getUsersBlogs", async (data) => {
 
   publishToQueue("users", JSON.stringify(authors))
 })
+
+subscribeToQueue("unfollowUser", async (data) => {
+  const {adminId, userId} = JSON.parse(data);
+
+  await User.findByIdAndUpdate(userId, {
+    $pull: {followers: adminId}
+  }, {new: true})
+});
+
+subscribeToQueue("followUser", async (data) => {
+  const {adminId, userId} = JSON.parse(data);
+
+  await User.findByIdAndUpdate(userId, {
+    $push: {followers: adminId}
+  }, {new: true})
+});
+
+subscribeToQueue("totalUsers", async () => {
+  const usersCount = await User.countDocuments();
+
+  if (usersCount > 0) {
+    publishToQueue("userCount", JSON.stringify(usersCount))
+  }
+});
+
+subscribeToQueue("getRecentUsers", async () => {
+  const recentUsers = await User.find().sort({createdAt: -1}).limit(5);
+
+  publishToQueue("recentUsers", JSON.stringify(recentUsers));
+})
+
+subscribeToQueue("getAllUsers", async () => {
+  const allUsers = await User.find().sort({createdAt: -1});
+
+  await publishToQueue("allUsers", JSON.stringify(allUsers));
+});
+
+subscribeToQueue("deleteUser", async (data) => {
+  const userId = JSON.parse(data);
+
+  await User.findByIdAndDelete(userId);
+});
+
+subscribeToQueue("blockUser", async(data) => {
+  const userId = JSON.parse(data);
+
+  await User.findByIdAndUpdate(userId, {isBlocked: true});
+});

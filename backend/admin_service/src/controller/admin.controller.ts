@@ -1,4 +1,4 @@
-import { json, Request, Response } from "express";
+import { Request, Response } from "express";
 import { asyncHandler } from "../utils/asyncHandler";
 import { ApiError } from "../utils/ApiError";
 import { ApiResponse } from "../utils/ApiResponse";
@@ -6,7 +6,33 @@ import { Admin } from "../models/admin.model";
 import { publishToQueue, subscribeToQueue } from "../service/rabbit";
 import { uploadImage } from "../utils/Cloudinary";
 
+interface RecentUser {
+  firstName: string;
+  lastName: string;
+  email: string;
+  createdAt: string;
+}
+
+interface RecentBlog {
+  title: string;
+  description: string;
+  createdAt: string;
+  views: number;
+  likes: number;
+  author: {
+    firstName: string;
+    lastName: string;
+    email: string;
+  }
+}
+
+let recentBlogs: RecentBlog[] = [];
+
 let users: Array<object> = [];
+let totalUsers = 0;
+let totalBlogs = 0;
+let totalComments = 0;
+let recentUsers: RecentUser[] = [];
 
 export const loginAdmin = asyncHandler(
   async (req: Request, res: Response) => {
@@ -65,7 +91,6 @@ export const getAdmin = asyncHandler(
 export const updateAdmin = asyncHandler(
   async (req: Request, res: Response) => {
     const { firstName, lastName, email } = req.body;
-    console.log(firstName, lastName, email);
 
     const files = req.files as { [key: string]: { path: string }[] };
     const avatarImagePath = files.avatar ? files.avatar[0].path : null;
@@ -122,60 +147,109 @@ export const followers = asyncHandler(async (req: Request, res: Response) => {
   if (!userId) {
     throw new ApiError(404, "userId not found")
   }
+
+  const loginUser = await Admin.findById(req.user?._id);
+
+  if (!loginUser) {
+    throw new ApiError(401, "unauthorized")
+  }
+
+  const following = loginUser.following;
+
+  if (following?.includes(userId)) {
+    await Admin.findByIdAndUpdate(req.user?._id, {
+      $pull: { following: userId }
+    })
+
+    const unfollowUser = await Admin.findById(userId);
+
+    if (unfollowUser) {
+      await Admin.findByIdAndUpdate(userId, {
+        $pull: { followers: req.user?._id }
+      }, { new: true })
+    } else {
+      publishToQueue("unfollowUser", JSON.stringify({ userId: userId, adminId: req.user?._id }));
+    }
+
+    return res.status(200).json(new ApiResponse(200, {}, "unfollow success"))
+  } else {
+    await Admin.findByIdAndUpdate(req.user?._id, {
+      $push: { following: userId }
+    })
+
+    const followUser = await Admin.findById(userId);
+
+    if (followUser) {
+      await Admin.findByIdAndUpdate(userId, {
+        $push: { followers: req.user?._id }
+      }, { new: true })
+    } else {
+      publishToQueue("followUser", JSON.stringify({ userId: userId, adminId: req.user?._id }));
+    }
+
+    return res.status(200).json(new ApiResponse(200, {}, "follow success"))
+  }
 });
 
 
 export const getDashboardStats = asyncHandler(
   async (req: Request, res: Response) => {
-    let totalUsers = 0;
-    let totalBlogs = 0;
-    let recentBlogs: Array<{ title: string; description: string; createdAt: string; views: number; likes: number; author: { firstName: string; lastName: string; email: string } }> = [];
-    interface RecentUser {
-      firstName: string;
-      lastName: string;
-      email: string;
-      createdAt: string;
-    }
+    publishToQueue("totalUsers", "get total users");
+    publishToQueue("totalBlogs", "get total blogs");
+    publishToQueue("totalComments", "get total comments");
+    publishToQueue("getRecentUsers", "get recent users");
+    publishToQueue("getRecentBlogs", "get recent blogs");
 
-    let recentUsers: RecentUser[] = [];
-    let totalComments = 0;
-
-
-    subscribeToQueue("userCount", (data) => {
-      totalUsers = JSON.parse(data);
-    });
-
-    subscribeToQueue("blogCount", (data) => {
-      totalBlogs = JSON.parse(data);
-    })
-
-    subscribeToQueue("totalComments", (data) => {
-      totalComments = JSON.parse(data);
-    })
-
-    subscribeToQueue("recentBlogs", (data) => {
-      recentBlogs = JSON.parse(data);
-    });
-
-    subscribeToQueue("recentUsers", (data) => {
-      recentUsers = JSON.parse(data);
-    })
-
-    return res.status(200).json(
-      new ApiResponse(
-        200,
-        {
-          stats: { totalUsers, totalBlogs, totalComments },
-          recentUsers,
-          recentBlogs,
-        },
-        "Dashboard stats fetched successfully"
-      )
-    );
+    setTimeout(() => {
+      return res.status(200).json(
+        new ApiResponse(
+          200,
+          {
+            stats: { totalUsers, totalBlogs, totalComments },
+            recentUsers,
+            recentBlogs,
+          },
+          "Dashboard stats fetched successfully"
+        )
+      );
+    }, 5000);
   }
 );
 
+subscribeToQueue("userCount", (data) => {
+  const parsedData = JSON.parse(data);
+
+  totalUsers = parsedData;
+})
+
+subscribeToQueue("blogCount", (data) => {
+  const parsedData = JSON.parse(data);
+
+  totalBlogs = parsedData;
+})
+
+subscribeToQueue("commentCount", (data) => {
+  const parsedData = JSON.parse(data);
+
+  totalComments = parsedData;
+})
+
+subscribeToQueue("recentUsers", (data) => {
+  const parsedData = JSON.parse(data);
+
+  recentUsers = parsedData;
+
+})
+
+subscribeToQueue("recentBlogs", (data) => {
+  const parsedData = JSON.parse(data);
+
+  recentBlogs = parsedData;
+})
+
 export const getAllUsers = asyncHandler(async (req: Request, res: Response) => {
+  publishToQueue("getAllUsers", "get all users");
+
   const interval = setInterval(() => {
     if (users.length > 0) {
       clearInterval(interval);
@@ -198,16 +272,20 @@ export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
   const { userId } = req.params;
 
   publishToQueue("deleteUser", JSON.stringify(userId));
+  publishToQueue("userBlogsDelete", JSON.stringify(userId));
+  publishToQueue("userCommentsDelete", JSON.stringify(userId));
 
-  return res
-    .status(200)
-    .json(
-      new ApiResponse(
-        200,
-        null,
-        "User and associated data deleted successfully"
-      )
-    );
+  setTimeout(() => {
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          null,
+          "User and associated data deleted successfully"
+        )
+      );
+  }, 1000);
 });
 
 export const toggleUserBlock = asyncHandler(
@@ -216,15 +294,15 @@ export const toggleUserBlock = asyncHandler(
 
     publishToQueue("blockUser", JSON.stringify(userId));
 
-    // return res
-    //   .status(200)
-    //   .json(
-    //     new ApiResponse(
-    //       200,
-    //       user,
-    //       `User ${user.isBlocked ? "blocked" : "unblocked"} successfully`
-    //     )
-    //   );
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          null,
+          "user blocked successfully"
+        )
+      );
   }
 );
 
@@ -232,7 +310,23 @@ subscribeToQueue("getAdminBlogs", async (data) => {
   const ids = JSON.parse(data);
 
   const authors = await Admin.find({ _id: ids })
-  console.log(authors)
 
   publishToQueue("admins", JSON.stringify(authors))
 })
+
+
+subscribeToQueue("unfollowAdmin", async (data) => {
+  const { adminId, userId } = JSON.parse(data);
+
+  await Admin.findByIdAndUpdate(adminId, {
+    $pull: { followers: userId }
+  }, { new: true })
+});
+
+subscribeToQueue("followAdmin", async (data) => {
+  const { adminId, userId } = JSON.parse(data);
+
+  await Admin.findByIdAndUpdate(adminId, {
+    $push: { followers: userId }
+  }, { new: true })
+});

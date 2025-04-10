@@ -31,7 +31,7 @@ export function AdminLoginForm({
         data,
         { withCredentials: true }
       );
-      console.log(response)
+      console.log(response);
 
       if (response.status === 200) {
         dispatch(login(response.data.data));
@@ -65,14 +65,7 @@ export function AdminLoginForm({
                 />
               </div>
               <div className="grid gap-3">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
-                  <Link
-                    to="/forgot-password"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline cursor-pointer">
-                    Forgot your password?
-                  </Link>
-                </div>
+                <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
                   type="password"

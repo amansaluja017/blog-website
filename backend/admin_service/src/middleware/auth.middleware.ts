@@ -52,7 +52,6 @@ export const verifyJWT = async (
     req.user = admin;
     next();
   } catch (error) {
-    console.error("Failed to verify JWT", error);
     throw new ApiError(401, "unauthorized");
   }
 };
