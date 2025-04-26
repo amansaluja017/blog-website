@@ -1,0 +1,106 @@
+services:
+  user_service:
+    build: ./user_service
+    ports:
+      - "3001:3001"
+    depends_on:
+      - user-mongo
+    environment:
+      - MONGO_URI=mongodb+srv://amansaluja017:43h9cQSu63cIXA6R@users.00zfcfk.mongodb.net/?retryWrites=true&w=majority&appName=users
+    networks:
+      - app-network
+
+  blog_service:
+    build: ./blog_service
+    ports:
+      - "3002:3002"
+    depends_on:
+      - blog-mongo
+    environment:
+      - MONGO_URI=mongodb+srv://amansaluja017:xPNbqW89KHSRhnLB@blogs.l1r10yy.mongodb.net/?retryWrites=true&w=majority&appName=Blogs
+    networks:
+      - app-network
+
+  comment_service:
+    build: ./comment_service
+    ports:
+      - "3003:3003"
+    depends_on:
+      - comment-mongo
+    environment:
+      - MONGO_URI=mongodb+srv://amansaluja017:BKcP2IFI32khbuPQ@comments.tdqyxdr.mongodb.net/?retryWrites=true&w=majority&appName=comments
+    networks:
+      - app-network
+
+  admin_service:
+    build: ./admin_service
+    ports:
+      - "3004:3004"
+    depends_on:
+      - admin-mongo
+    environment:
+      - MONGO_URI=mongodb+srv://amansaluja017:sxrKmiylKb1Kz8Vy@admin.muwuosx.mongodb.net/?retryWrites=true&w=majority&appName=admin
+    networks:
+      - app-network
+
+  gateway:
+    build: ./gateway
+    ports:
+      - "3000:3000"
+    depends_on:
+      - user_service
+      - blog_service
+      - comment_service
+      - admin_service
+    networks:
+      - app-network
+
+  user-mongo:
+    image: mongo
+    container_name: user-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - user-mongo-data:/data/db
+    networks:
+      - app-network
+
+  blog-mongo:
+    image: mongo
+    container_name: blog-mongo
+    ports:
+      - "27018:27017"
+    volumes:
+      - blog-mongo-data:/data/db
+    networks:
+      - app-network
+
+  comment-mongo:
+    image: mongo
+    container_name: comment-mongo
+    ports:
+      - "27019:27017"
+    volumes:
+      - comment-mongo-data:/data/db
+    networks:
+      - app-network
+
+  admin-mongo:
+    image: mongo
+    container_name: admin-mongo
+    ports:
+      - "27020:27017"
+    volumes:
+      - admin-mongo-data:/data/db
+    networks:
+      - app-network
+
+volumes:
+  user-mongo-data:
+  blog-mongo-data:
+  comment-mongo-data:
+  admin-mongo-data:
+
+networks:
+  app-network:
+    driver: bridge
